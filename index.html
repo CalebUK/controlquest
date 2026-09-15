@@ -46,6 +46,7 @@
   .pip.done{opacity:1;}
   .mute{border:none;background:rgba(255,255,255,.14);color:var(--chalk);width:50px;height:50px;
     border-radius:50%;font-size:1.4rem;cursor:pointer;line-height:1;}
+  .mute.off{opacity:.4;}
 
   /* ---------- field ---------- */
   /* the board keeps its 4:3 shape but grows to use whatever the screen allows */
@@ -410,6 +411,7 @@
   <div class="hud">
     <button class="hud-btn" id="backBtn" hidden>Back</button>
     <div class="tally"><span id="tallyNum">0</span><span class="pips" id="pips"></span></div>
+    <button class="mute" id="musicBtn" aria-label="Music on or off">🎵</button>
     <button class="mute" id="muteBtn" aria-label="Sound on or off">🔊</button>
   </div>
 
@@ -701,6 +703,144 @@
       o.start(t); o.stop(t+dur+0.05);
     }catch(e){}
   }
+  /* ---------- themed background music, synthesised on the fly ---------- */
+  var SCALES = {maj:[0,2,4,5,7,9,11], min:[0,2,3,5,7,8,10], pent:[0,2,4,7,9],
+                mpent:[0,3,5,7,10], hira:[0,2,3,7,8]};
+  var N = null;
+  var MUSIC = {
+    home:     {bpm:104, wave:"triangle", root:48, scale:"pent",
+               bass:[0,N,N,N,4,N,N,N,2,N,N,N,4,N,N,N],
+               lead:[4,N,2,4,7,N,4,N,2,N,4,N,0,N,N,N]},
+    football: {bpm:126, wave:"square", root:48, scale:"maj",
+               bass:[0,N,0,N,4,N,4,N,3,N,3,N,4,N,N,N],
+               lead:[7,N,7,6,4,N,2,N,0,N,4,N,7,N,N,N]},
+    sea:      {bpm:72,  wave:"sine", root:48, scale:"pent",
+               bass:[0,N,N,N,N,N,N,N,3,N,N,N,N,N,N,N],
+               lead:[4,N,6,N,7,N,6,N,4,N,3,N,2,N,N,N]},
+    farm:     {bpm:140, wave:"triangle", root:48, scale:"maj",
+               bass:[0,N,4,N,0,N,4,N,3,N,0,N,4,N,4,N],
+               lead:[4,5,6,N,4,N,2,N,0,1,2,N,4,N,N,N]},
+    road:     {bpm:120, wave:"square", root:46, scale:"maj",
+               bass:[0,0,N,0,0,N,0,N,3,3,N,3,4,N,4,N],
+               lead:[7,N,N,7,6,N,N,6,4,N,N,4,7,N,N,N]},
+    space:    {bpm:66,  wave:"sine", root:45, scale:"mpent",
+               bass:[0,N,N,N,N,N,N,N,4,N,N,N,N,N,N,N],
+               lead:[7,N,N,6,N,N,4,N,N,2,N,N,0,N,N,N]},
+    food:     {bpm:108, wave:"triangle", root:50, scale:"maj",
+               bass:[0,N,N,4,N,N,3,N,N,4,N,N,0,N,N,N],
+               lead:[4,N,6,N,7,6,4,N,2,N,4,N,0,N,N,N]},
+    dojo:     {bpm:86,  wave:"triangle", root:47, scale:"hira",
+               bass:[0,N,N,N,0,N,N,N,3,N,N,N,3,N,N,N],
+               lead:[4,N,3,N,2,N,N,N,3,N,4,N,0,N,N,N]},
+    dino:     {bpm:74,  wave:"triangle", root:41, scale:"min",
+               bass:[0,N,N,N,0,N,N,N,4,N,N,N,4,N,N,N],
+               lead:[0,N,N,2,N,N,4,N,3,N,N,2,0,N,N,N]},
+    bugs:     {bpm:146, wave:"square", root:50, scale:"pent",
+               bass:[0,N,0,N,3,N,3,N,4,N,4,N,2,N,2,N],
+               lead:[4,6,7,6,4,N,2,N,4,6,7,N,9,N,7,N]}
+  };
+  var musicOn = save.music !== false, musicGain = null, musicTimer = null,
+      musicStep = 0, musicNext = 0, curTrack = null, curTrackId = "";
+  function degToMidi(tr, d){
+    var sc = SCALES[tr.scale], len = sc.length;
+    var oct = Math.floor(d/len), idx = ((d % len) + len) % len;
+    return tr.root + sc[idx] + 12*oct;
+  }
+  function musicNote(midi, at, dur, wave, vol){
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = wave;
+    o.frequency.value = 440*Math.pow(2, (midi-69)/12);
+    o.connect(g); g.connect(musicGain);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(vol, at + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.start(at); o.stop(at + dur + 0.06);
+  }
+  function scheduleMusic(){
+    if(!musicOn || !curTrack || !actx || actx.state !== "running") return;
+    var stepLen = 60/curTrack.bpm/2;
+    while(musicNext < actx.currentTime + 0.4){
+      var i = musicStep % 16;
+      var b = curTrack.bass[i], l = curTrack.lead[i];
+      if(b !== null && b !== undefined) musicNote(degToMidi(curTrack, b), musicNext, stepLen*1.7, "triangle", 0.5);
+      if(l !== null && l !== undefined) musicNote(degToMidi(curTrack, l) + 12, musicNext, stepLen*0.85, curTrack.wave, 0.3);
+      musicNext += stepLen;
+      musicStep++;
+    }
+  }
+  var MUSIC_VOL = 0.05, musicToken = 0;
+  function setTrack(id){
+    if(id === curTrackId && musicTimer) return;       // already playing this one
+    var first = !curTrackId;
+    curTrackId = id;
+    var next = MUSIC[id] || MUSIC.home;
+    if(!musicOn){ curTrack = next; return; }
+    try{
+      if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state === "suspended") actx.resume();
+      if(!musicGain){
+        musicGain = actx.createGain();
+        musicGain.gain.value = 0.0001;               // sits well under the sound effects
+        musicGain.connect(actx.destination);
+      }
+    }catch(e){ return; }
+
+    // fade the old track down, leave a beat of silence, then fade the new one in,
+    // so notes still ringing from the last theme never overlap the new key
+    var token = ++musicToken;
+    clearInterval(musicTimer); musicTimer = null;
+    var now = actx.currentTime;
+    var fadeOut = (musicStep > 0 && !first) ? 0.25 : 0;
+    try{
+      musicGain.gain.cancelScheduledValues(now);
+      musicGain.gain.setValueAtTime(musicGain.gain.value || 0.0001, now);
+      if(fadeOut) musicGain.gain.linearRampToValueAtTime(0.0001, now + fadeOut);
+      else musicGain.gain.setValueAtTime(0.0001, now);
+    }catch(e){}
+
+    setTimeout(function(){
+      if(token !== musicToken || !musicOn || !actx) return;
+      curTrack = next;
+      musicStep = 0;
+      var t = actx.currentTime;
+      musicNext = t + 0.12;
+      try{
+        musicGain.gain.cancelScheduledValues(t);
+        musicGain.gain.setValueAtTime(0.0001, t);
+        musicGain.gain.linearRampToValueAtTime(MUSIC_VOL, t + 0.4);
+      }catch(e){}
+      musicTimer = setInterval(scheduleMusic, 60);
+    }, fadeOut*1000 + 420);                           // fade, then a short gap
+  }
+  function stopMusic(){
+    musicToken++;
+    clearInterval(musicTimer); musicTimer = null;
+    musicStep = 0;
+    try{
+      if(musicGain && actx){
+        var t = actx.currentTime;
+        musicGain.gain.cancelScheduledValues(t);
+        musicGain.gain.setValueAtTime(musicGain.gain.value, t);
+        musicGain.gain.linearRampToValueAtTime(0.0001, t + 0.25);
+      }
+    }catch(e){}
+  }
+  var musicBtn = $("musicBtn");
+  musicBtn.textContent = "🎵";
+  musicBtn.classList.toggle("off", !musicOn);
+  musicBtn.addEventListener("click", function(){
+    musicOn = !musicOn;
+    save.music = musicOn; store();
+    musicBtn.classList.toggle("off", !musicOn);
+    if(musicOn) setTrack(curTrackId || "home"); else stopMusic();
+  });
+  // browsers hold audio until the first gesture, so pick the track up again then
+  window.addEventListener("pointerdown", function(){
+    if(!musicOn) return;
+    try{ if(actx && actx.state === "suspended") actx.resume(); }catch(e){}
+    if(!musicTimer){ var want = curTrackId || "home"; curTrackId = ""; setTrack(want); }
+  }, true);
+
   function goalSound(){ tone(523,0,.18,"triangle"); tone(659,.1,.18,"triangle"); tone(784,.2,.34,"triangle"); }
   function winSound(){ [523,659,784,1046,1318].forEach(function(f,i){ tone(f, i*0.14, .3, "triangle", .18); }); }
   function softSound(){ tone(220,0,.16,"sine",.12); }
@@ -3777,6 +3917,7 @@
     resetField();
     field.setAttribute("data-bg", t.bg);
     paintBackdrop();
+    if(curTrackId !== t.id) setTrack(t.id);
     pageAs("/theme/" + t.id);
     themeTitle.textContent = t.name;
     themeModes.innerHTML = "";
@@ -3870,6 +4011,7 @@
     theme = null;
     field.setAttribute("data-bg", "home");
     paintBackdrop();
+    if(curTrackId !== "home") setTrack("home");
     homeSheet.hidden = false; themeSheet.hidden = true; winSheet.hidden = true;
     backBtn.hidden = true;
     tallyNum.textContent = ""; pips.innerHTML = "";
