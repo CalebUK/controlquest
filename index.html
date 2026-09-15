@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Vercel Web Analytics (only active when served from Vercel) -->
+<script>window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <style>
   :root{
     --chalk:#f4fff7; --sun:#ffc93c; --kit:#e8443a; --blue:#2f4fb5;
@@ -752,6 +755,7 @@
     running = false; nextBtn.classList.remove("on");
     wonTheme = theme; wonMode = mode;
     if(theme && gameKey){ save.won[wonKey(theme, gameKey)] = true; store(); }
+    track("game_won", {theme: theme ? theme.id : "", game: gameKey, speed: save.speed});
     winLine.textContent = WIN_LINES[gameKey] || (target + " done. Brilliant.");
     winSheet.hidden = false;
     winSound(); confetti();
@@ -2746,6 +2750,9 @@
     meteor: ["🛡️","Meteor Defence","Meteors are falling! Each one has a letter. Type it to zap the meteor before it lands."],
     soup:   ["🍲","Soup Speller","The card shows a word. Type each letter in order to drop that ingredient in the pot."]
   };
+  function track(name, data){
+    try{ if(window.va) window.va("event", {name:name, data:data||{}}); }catch(e){}
+  }
   function showRules(key){
     var rl = RULES[key] || ["🎮","Ready?","Have fun!"];
     rulesEmoji.textContent = rl[0];
@@ -2757,6 +2764,7 @@
   $("goBtn").addEventListener("click", function(){
     rulesSheet.hidden = true;
     running = true;
+    track("game_start", {theme: theme ? theme.id : "", game: gameKey, speed: save.speed});
     pickSound();
     nextRound();
   });
