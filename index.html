@@ -756,6 +756,7 @@
     wonTheme = theme; wonMode = mode;
     if(theme && gameKey){ save.won[wonKey(theme, gameKey)] = true; store(); }
     track("game_won", {theme: theme ? theme.id : "", game: gameKey, speed: save.speed});
+    pageAs("/won/" + (theme ? theme.id : "x") + "/" + gameKey + "/" + save.speed);
     winLine.textContent = WIN_LINES[gameKey] || (target + " done. Brilliant.");
     winSheet.hidden = false;
     winSound(); confetti();
@@ -2753,6 +2754,15 @@
   function track(name, data){
     try{ if(window.va) window.va("event", {name:name, data:data||{}}); }catch(e){}
   }
+  // Custom events need a paid plan, but page views are counted per URL path on every
+  // plan — so give each screen its own path and they show up in the Pages panel.
+  function pageAs(path){
+    try{
+      if(location.pathname === path) return;
+      history.pushState({}, "", path);
+      if(window.va) window.va("pageview", {route:path, path:path});
+    }catch(e){}
+  }
   function showRules(key){
     var rl = RULES[key] || ["🎮","Ready?","Have fun!"];
     rulesEmoji.textContent = rl[0];
@@ -2765,6 +2775,7 @@
     rulesSheet.hidden = true;
     running = true;
     track("game_start", {theme: theme ? theme.id : "", game: gameKey, speed: save.speed});
+    pageAs("/play/" + (theme ? theme.id : "x") + "/" + gameKey + "/" + save.speed);
     pickSound();
     nextRound();
   });
@@ -2836,6 +2847,7 @@
     resetField();
     field.setAttribute("data-bg", t.bg);
     paintBackdrop();
+    pageAs("/theme/" + t.id);
     themeTitle.textContent = t.name;
     themeModes.innerHTML = "";
     var isFootball = t.id === "football";
@@ -2934,6 +2946,7 @@
     hint.textContent = "";
     resetClearBtn();
     buildTiles(); paintQuest(); paintSegs();
+    pageAs("/");
   }
 
   backBtn.addEventListener("click", function(){
@@ -2947,6 +2960,8 @@
     startGame(m, k, tg);
   });
   $("menuBtn").addEventListener("click", function(){ var t = wonTheme; resetField(); openTheme(t); });
+
+  window.addEventListener("popstate", function(){ if(mode || !homeSheet.hidden === false) toHome(); });
 
   window.addEventListener("resize", function(){
     paintBackdrop();
