@@ -22,6 +22,15 @@
   :root[data-theme="dark"]{ --page:#08140f; --card:#12241c; --ink:#eaf7ee; }
 
   *{box-sizing:border-box;}
+  html,body{overscroll-behavior:none;}          /* no pull-to-refresh mid-game */
+  .stage,.field{
+    user-select:none; -webkit-user-select:none; -ms-user-select:none;
+    -webkit-user-drag:none; -webkit-touch-callout:none;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:none;                          /* no pinch-zoom or scroll on the board */
+  }
+  .stage img,.stage svg{-webkit-user-drag:none;pointer-events:none;}
+  .stage button{-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{margin:0;background:var(--page);font-family:var(--font);color:var(--ink);
     display:flex;align-items:center;justify-content:center;padding:10px;
@@ -384,6 +393,13 @@
   .mode .how{font-size:.88rem;color:#5d8371;}
   .mode .best{font-size:.82rem;color:#8aa89a;min-height:1.1em;}
 
+  .sheets{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:2px;}
+  .sheets .lbl{color:rgba(255,255,255,.7);font-size:.92rem;font-weight:500;}
+  .sheet-btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+    border:none;background:rgba(255,255,255,.16);color:var(--chalk);font-family:var(--font);
+    font-weight:600;font-size:.98rem;padding:9px 18px;border-radius:999px;cursor:pointer;}
+  .sheet-btn:hover{background:rgba(255,255,255,.28);}
+  .sheet-btn:focus-visible{outline:3px solid var(--chalk);outline-offset:2px;}
   .clear-btn{border:none;background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);
     font-family:var(--font);font-size:.95rem;font-weight:500;padding:10px 18px;border-radius:999px;
     cursor:pointer;}
@@ -481,6 +497,7 @@
     <div class="sheet" id="themeSheet" hidden>
       <h1 id="themeTitle">Football Training</h1>
       <div class="modes" id="themeModes"></div>
+      <div class="sheets" id="themeSheets"></div>
     </div>
 
     <button class="big-btn" id="nextBtn">Next ▶</button>
@@ -523,7 +540,8 @@
       rulesText=$("rulesText"), nextBtn=$("nextBtn"),
       keys=$("keys"), dpad=$("dpad"), cheer=$("cheer"), flash=$("flash"), toastEl=$("toast"),
       homeSheet=$("homeSheet"), themeSheet=$("themeSheet"), winSheet=$("winSheet"),
-      themeTitle=$("themeTitle"), themeModes=$("themeModes"), tiles=$("tiles"), winLine=$("winLine"),
+      themeTitle=$("themeTitle"), themeModes=$("themeModes"), themeSheets=$("themeSheets"),
+      tiles=$("tiles"), winLine=$("winLine"),
       backBtn=$("backBtn"), muteBtn=$("muteBtn"), tallyNum=$("tallyNum"), pips=$("pips"), hint=$("hint");
 
   var coarse = window.matchMedia("(pointer: coarse)").matches;
@@ -558,6 +576,22 @@
     + '<rect x="23" y="32" width="18" height="20" fill="#f3e7cf"/>'
     + '<path d="M23 32 L41 52 M41 32 L23 52" stroke="#8a2f22" stroke-width="3"/>'
     + '</svg>';
+
+  /* ---------------------------------------------------------------
+     PRINTABLES — add a theme id below once its PDFs are in the repo at
+     /printables/<theme-id>/colouring.pdf, writing.pdf, reading.pdf
+     Only the sheets you list appear as buttons, so nothing can 404.
+     --------------------------------------------------------------- */
+  var PRINTABLES = {
+    // football: ["colouring","writing","reading"],
+    // sea:      ["colouring","writing","reading"],
+    // farm:     ["colouring"],
+  };
+  var SHEET_META = {
+    colouring: ["🎨", "Colouring"],
+    writing:   ["✏️", "Writing"],
+    reading:   ["📖", "Reading"]
+  };
 
   /* ================= themes ================= */
   var THEMES = [
@@ -3941,6 +3975,25 @@
     var a = t.arrows;
     themeModes.appendChild(modeCard(a.emoji, a.name, "Arrow keys",
       isWon(t,a.key), true, function(){ startGame("arrows", a.key, a.target); }));
+    // printable worksheets for this theme, if any have been added to the repo
+    themeSheets.innerHTML = "";
+    var sheets = PRINTABLES[t.id] || [];
+    if(sheets.length){
+      var lbl = document.createElement("span");
+      lbl.className = "lbl";
+      lbl.textContent = "Print at home:";
+      themeSheets.appendChild(lbl);
+      sheets.forEach(function(kind){
+        var meta = SHEET_META[kind] || ["📄", kind];
+        var a = document.createElement("a");
+        a.className = "sheet-btn";
+        a.href = "/printables/" + t.id + "/" + kind + ".pdf";
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.innerHTML = '<span>'+meta[0]+'</span><span>'+meta[1]+'</span>';
+        themeSheets.appendChild(a);
+      });
+    }
     homeSheet.hidden = true; winSheet.hidden = true;
     themeSheet.hidden = false;
     backBtn.hidden = false;
