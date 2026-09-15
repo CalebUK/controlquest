@@ -85,6 +85,12 @@
   .roadlines.on{display:block;}
   .field[data-bg="space"]{background:radial-gradient(circle at 30% 20%,#2a2060 0%,#100b2e 60%,#06041a 100%);}
   .field[data-bg="food"]{background:repeating-linear-gradient(90deg,#e9c79a 0 34px,#e3bf90 34px 68px);}
+  .field[data-bg="dojo"]{background:linear-gradient(180deg,#f3e8d2 0 47%,#c08f57 47% 100%);}
+  .field[data-bg="dino"]{background:linear-gradient(180deg,#f3b46c 0 44%,#7fa34a 44% 100%);}
+  .field[data-bg="garden"]{background:linear-gradient(180deg,#9fd7f5 0 22%,#7cb342 22% 100%);}
+  .field[data-bg="blanket"]{background:#d8433a;}
+  .field[data-bg="dirt"]{background:#6d5133;}
+  .field[data-bg="lava"]{background:linear-gradient(180deg,#d4501a 0%,#f08a2c 45%,#c43a12 100%);}
 
   /* football furniture */
   .arc,.halfway,.centre,.goal,.goal2,.runball{display:none;}
@@ -213,6 +219,8 @@
   .drawlayer{position:absolute;inset:0;pointer-events:none;display:none;z-index:1;}
   .g-stars .drawlayer{display:block;}
   .drawlayer .link{stroke:#ffe27a;stroke-width:4;stroke-linecap:round;opacity:.95;}
+  .drawlayer .antline{stroke:#6b4626;stroke-width:12;stroke-linecap:round;opacity:.55;}
+  .g-ants .drawlayer,.g-bugs .drawlayer{display:block;}
 
   .piecelayer{position:absolute;inset:0;pointer-events:none;z-index:4;}
   .piece{position:absolute;left:0;top:0;display:flex;align-items:center;justify-content:center;
@@ -266,6 +274,8 @@
 
   /* ---------- typing games ---------- */
   .scene{position:absolute;inset:0;pointer-events:none;z-index:1;}
+  .digcanvas{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none;z-index:2;}
+  .g-dig .digcanvas{display:block;}
   .lt-wrap{position:relative;display:flex;align-items:center;justify-content:center;
     width:100%;height:100%;}
   .lt-emoji{font-size:1em;line-height:1;transition:filter .35s ease;}
@@ -278,6 +288,12 @@
   .sprite.dark .lt-wrap::before{content:"";position:absolute;inset:-22%;border-radius:50%;
     border:4px solid #7fe3ff;animation:sonarping 1.5s ease-out infinite;}
   @keyframes sonarping{0%{transform:scale(.62);opacity:.95;}100%{transform:scale(1.3);opacity:0;}}
+  .katacard{display:flex;align-items:center;justify-content:center;width:100%;height:100%;
+    background:var(--card);color:var(--ink);border-radius:18px;font-size:.66em;font-weight:700;
+    line-height:1;box-shadow:0 6px 0 rgba(0,0,0,.3);}
+  .katacard.hid{color:#9fb3a8;}
+  .bugblank{color:var(--kit);border-bottom:6px solid var(--kit);padding:0 6px;margin-right:4px;
+    display:inline-block;}
   .sprite.flipart .lt-emoji{transform:scaleX(-1);}
   .sprite.munch .lt-wrap{animation:munch .45s ease;}
   @keyframes munch{0%,100%{transform:scale(1);}40%{transform:scale(1.28) rotate(-6deg);}}
@@ -416,6 +432,7 @@
     <div class="pizza" id="pizzaEl"></div>
     <svg class="drawlayer" id="drawLayer"></svg>
     <div class="scene" id="sceneLayer"></div>
+    <canvas class="digcanvas" id="digCanvas"></canvas>
     <div class="sprites" id="sprites"></div>
     <div class="piecelayer" id="pieceLayer"></div>
     <div class="order" id="orderEl"></div>
@@ -499,6 +516,7 @@
       trackLayer=$("trackLayer"), pizzaEl=$("pizzaEl"), drawLayer=$("drawLayer"),
       pieceLayer=$("pieceLayer"), orderEl=$("orderEl"), checklist=$("checklist"),
       sceneLayer=$("sceneLayer"), gauge=$("gauge"), gaugeFill=$("gaugeFill"), bgLayer=$("bgLayer"),
+      digCanvas=$("digCanvas"),
       rulesSheet=$("rulesSheet"), rulesEmoji=$("rulesEmoji"), rulesTitle=$("rulesTitle"),
       rulesText=$("rulesText"), nextBtn=$("nextBtn"),
       keys=$("keys"), dpad=$("dpad"), cheer=$("cheer"), flash=$("flash"), toastEl=$("toast"),
@@ -572,6 +590,27 @@
             hint:"Click the glowing star each time to join the dots and reveal the picture. 5 pictures wins."},
      arrows:{key:"dodge", name:"Asteroid Run",    emoji:"☄️", target:5,
              hint:"Fly up to the planet without hitting a rock. 5 flights wins."}},
+    {id:"bugs", name:"In the Garden", emoji:"🐞", bg:"garden",
+     letters:{key:"bugs", name:"Bug Sounds", emoji:"🔤", target:5,
+              hint:"The bug's name is missing its first letter. Type the letter that belongs there."},
+     mouse:{key:"ants", name:"Ant Trail", emoji:"🐜", target:5,
+            hint:"Hold the mouse button and draw a path from the nest to the picnic, then let go."},
+     arrows:{key:"crawl", name:"Caterpillar Crawl", emoji:"🐛", target:6,
+             hint:"Eat all the food with the arrow keys. Six feasts and you become a butterfly!"}},
+    {id:"dino", name:"Long Ago", emoji:"🦕", bg:"dino",
+     letters:{key:"trail", name:"Footprint Trail", emoji:"🐾", target:5,
+              hint:"Type the letter on each footprint, left to right, to walk the dinosaur along the trail."},
+     mouse:{key:"dig", name:"Fossil Dig", emoji:"🦴", target:5,
+            hint:"Hold the mouse button and sweep the brush over the dirt to uncover the skeleton."},
+     arrows:{key:"leap", name:"Lava Leap", emoji:"🌋", target:5,
+             hint:"Hop from stone to stone with the arrow keys and find the path to the far bank."}},
+    {id:"dojo", name:"At the Dojo", emoji:"🥋", bg:"dojo",
+     letters:{key:"kata", name:"Kata Caller", emoji:"🧠", target:5,
+              hint:"Read the move word, then type it back when the cards flip over."},
+     mouse:{key:"board", name:"Board Breaker", emoji:"💥", target:5,
+            hint:"Hold the mouse button to build up power, then let go when the bar is on green."},
+     arrows:{key:"pads", name:"Pad Kicks", emoji:"🦶", target:5,
+             hint:"One pad lights up at a time. Press that arrow key to kick it."}},
     {id:"food", name:"What's Cooking", emoji:"🍳", bg:"food",
      letters:{key:"soup", name:"Soup Speller", emoji:"🍲", target:5,
               hint:"Spell the word on the card. Type each letter to drop that ingredient in the pot."},
@@ -748,7 +787,10 @@
     snap:"Five rolls of film used up!", mud:"Five piglets sparkling clean!", track:"Five trains through!",
     stars:"Five constellations drawn!", pizza:"Five pizzas made!",
     sonar:"Five sonar sweeps finished!", feed:"Five barns fed!", toll:"Five queues cleared!",
-    meteor:"Five meteor showers stopped!", soup:"Five soups spelled!"
+    meteor:"Five meteor showers stopped!", soup:"Five soups spelled!",
+    board:"Five boards smashed!", kata:"Five katas remembered!", pads:"Five rounds of kicks!",
+    dig:"Five fossils uncovered!", trail:"Five trails followed!", leap:"Five lava crossings!",
+    ants:"Five ant trails drawn!", bugs:"Five bugs named!", crawl:"A beautiful butterfly!"
   };
   function showWin(){
     stopLoop();
@@ -764,7 +806,7 @@
   }
 
   /* ================= backdrops ================= */
-  var BG_OVERRIDE = {sonar:"sonardeep", track:"country"};
+  var BG_OVERRIDE = {sonar:"sonardeep", track:"country", dig:"dirt", leap:"lava", crawl:"blanket"};
   function paintBackdrop(){
     var bg = field.getAttribute("data-bg"), r = rect(), html = "", i;
     bgLayer.setAttribute("viewBox", "0 0 "+r.width+" "+r.height);
@@ -793,6 +835,55 @@
               + '" r="'+(3 + Math.random()*6).toFixed(1)+'" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"'
               + ' style="animation-duration:'+(7 + Math.random()*9).toFixed(1)+'s;animation-delay:-'+(Math.random()*12).toFixed(1)+'s"/>';
       }
+    } else if(bg === "garden"){
+      html += '<circle cx="'+(r.width*0.88)+'" cy="'+(r.height*0.1)+'" r="'+(r.width*0.045)+'" fill="#ffd84d"/>';
+      for(i=0;i<9;i++){
+        var gx = r.width*(0.04 + i*0.115), gh = r.height*(0.08 + Math.random()*0.07);
+        html += '<g class="sway" style="animation-delay:-'+(Math.random()*3).toFixed(1)+'s">'
+              + '<path d="M'+gx+' '+r.height+' q-'+(gh*0.3)+' -'+(gh*0.6)+' '+(gh*0.1)+' -'+gh
+              + '" fill="none" stroke="#4e8a2c" stroke-width="7" stroke-linecap="round"/></g>';
+      }
+      for(i=0;i<5;i++){
+        var flx = r.width*(0.1 + i*0.2), fly = r.height*(0.66 + (i%2)*0.14), fr = r.height*0.024;
+        html += '<g><path d="M'+flx+' '+(fly+fr*3)+' v-'+(fr*3)+'" stroke="#4e8a2c" stroke-width="5"/>'
+              + '<circle cx="'+flx+'" cy="'+(fly-fr)+'" r="'+fr+'" fill="#ffd84d"/>'
+              + '<circle cx="'+(flx-fr*1.3)+'" cy="'+fly+'" r="'+fr+'" fill="#f06292"/>'
+              + '<circle cx="'+(flx+fr*1.3)+'" cy="'+fly+'" r="'+fr+'" fill="#f06292"/>'
+              + '<circle cx="'+flx+'" cy="'+(fly+fr*1.3)+'" r="'+fr+'" fill="#f06292"/>'
+              + '<circle cx="'+flx+'" cy="'+fly+'" r="'+(fr*0.7)+'" fill="#fff3c4"/></g>';
+      }
+    } else if(bg === "dino"){
+      html += '<circle cx="'+(r.width*0.14)+'" cy="'+(r.height*0.12)+'" r="'+(r.width*0.05)+'" fill="#ffe08a"/>';
+      html += '<path d="M'+(r.width*0.52)+' '+(r.height*0.45)+' L'+(r.width*0.72)+' '+(r.height*0.1)
+            + ' L'+(r.width*0.92)+' '+(r.height*0.45)+' Z" fill="#6b5545"/>'
+            + '<path d="M'+(r.width*0.66)+' '+(r.height*0.19)+' q'+(r.width*0.06)+' '+(r.height*0.05)+' '
+            + (r.width*0.12)+' 0 q-'+(r.width*0.04)+' '+(r.height*0.1)+' -'+(r.width*0.12)+' 0 Z" fill="#e8552a"/>';
+      for(i=0;i<7;i++){
+        var fx = r.width*(0.03 + i*0.155), fy = r.height*(0.52 + (i%3)*0.13), fs = r.height*0.1;
+        html += '<g class="sway" style="animation-delay:-'+(Math.random()*3).toFixed(1)+'s">'
+              + '<path d="M'+fx+' '+(fy+fs)+' q-'+(fs*0.5)+' -'+(fs*0.6)+' 0 -'+fs+' q'+(fs*0.5)+' '+(fs*0.4)
+              + ' 0 '+fs+'" fill="#3f7a2e"/></g>';
+      }
+    } else if(bg === "lava"){
+      for(i=0;i<16;i++){
+        html += '<ellipse class="tw" style="animation-delay:-'+(Math.random()*3).toFixed(1)+'s" cx="'
+              + (Math.random()*r.width).toFixed(0)+'" cy="'+(r.height*(0.2+Math.random()*0.7)).toFixed(0)
+              + '" rx="'+(8+Math.random()*26).toFixed(0)+'" ry="'+(4+Math.random()*9).toFixed(0)
+              + '" fill="#ffd05a" opacity=".55"/>';
+      }
+    } else if(bg === "dojo"){
+      var wallH = r.height*0.47, cw = r.width/7, ch = wallH/3;
+      for(i=0;i<=7;i++) html += '<line x1="'+(i*cw)+'" y1="0" x2="'+(i*cw)+'" y2="'+wallH
+        + '" stroke="#8a6a45" stroke-width="5" opacity=".75"/>';
+      for(i=0;i<=3;i++) html += '<line x1="0" y1="'+(i*ch)+'" x2="'+r.width+'" y2="'+(i*ch)
+        + '" stroke="#8a6a45" stroke-width="5" opacity=".75"/>';
+      html += '<rect x="0" y="'+(wallH-9)+'" width="'+r.width+'" height="14" fill="#6f5230"/>';
+      for(i=1;i<8;i++) html += '<line x1="0" y1="'+(wallH + i*(r.height-wallH)/8)+'" x2="'+r.width
+        + '" y2="'+(wallH + i*(r.height-wallH)/8)+'" stroke="#a97c48" stroke-width="3" opacity=".7"/>';
+      html += '<rect x="'+(r.width*0.05)+'" y="'+(r.height*0.03)+'" width="'+(r.width*0.1)+'" height="'
+        + (r.height*0.34)+'" rx="5" fill="#c8402c"/>'
+        + '<text x="'+(r.width*0.1)+'" y="'+(r.height*0.15)+'" text-anchor="middle" font-size="'
+        + (r.width*0.055)+'" fill="#ffe9d1">力</text>';
     } else if(bg === "country"){
       html += '<circle cx="'+(r.width*0.85)+'" cy="'+(r.height*0.12)+'" r="'+(r.width*0.05)+'" fill="#ffd84d"/>';
       for(i=0;i<3;i++){
@@ -822,7 +913,10 @@
     dodge:"Use the arrow keys to fly!", catch:"Move the plate with the arrow keys!",
     snap:"Click a fish!", mud:"Click the mud!", track:"Drag a track piece!", stars:"Click the twinkling star!",
     pizza:"Drag a topping!", sonar:"Type the letter!", feed:"Type an animal's letter!",
-    toll:"Type the number plate!", meteor:"Type the letter on a meteor!", soup:"Type the next letter!"
+    toll:"Type the number plate!", meteor:"Type the letter on a meteor!", soup:"Type the next letter!",
+    board:"Hold the mouse button down!", kata:"Type the moves in order!", pads:"Press the arrow for the bright pad!",
+    dig:"Hold the button and sweep!", trail:"Type the letter on the next print!", leap:"Press an arrow to hop!",
+    ants:"Draw a path from the nest!", bugs:"Type the first letter of the name!", crawl:"Steer with the arrow keys!"
   };
   var lastInput = performance.now();
   function noteInput(){ lastInput = performance.now(); }
@@ -2371,26 +2465,853 @@
     } else finishSoup();
   }
 
+  /* ================= DOJO: shared art ================= */
+  var FIGHTER_SVG = '<svg viewBox="0 0 64 96" xmlns="http://www.w3.org/2000/svg">'
+    + '<circle cx="32" cy="16" r="13" fill="#f6d3ae" stroke="#c9a07a" stroke-width="2"/>'
+    + '<path d="M19 6 q13 -8 26 0 q-4 -9 -13 -9 q-9 0 -13 9z" fill="#3a2a1c"/>'
+    + '<path d="M14 36 h36 l7 38 h-50 z" fill="#ffffff" stroke="#c2c8d2" stroke-width="2.5"/>'
+    + '<path d="M32 36 l-9 22 M32 36 l9 22" stroke="#c2c8d2" stroke-width="2.5" fill="none"/>'
+    + '<rect x="9" y="56" width="46" height="10" rx="4" fill="#e8443a"/>'
+    + '<path d="M9 61 l-6 9 M55 61 l6 9" stroke="#e8443a" stroke-width="5" stroke-linecap="round"/></svg>';
+  var PAD_SVG = '<svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">'
+    + '<circle cx="35" cy="35" r="32" fill="#2f3a4a" stroke="#1d2531" stroke-width="4"/>'
+    + '<circle cx="35" cy="35" r="23" fill="#e8443a"/>'
+    + '<circle cx="35" cy="35" r="11" fill="#ffd0c8"/></svg>';
+
+  /* ================= MOUSE: board breaker (dojo) ================= */
+  var BOARD_SVG = '<svg viewBox="0 0 180 70" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="0" y="8" width="28" height="54" rx="5" fill="#8a8a94" stroke="#5f6570" stroke-width="3"/>'
+    + '<rect x="152" y="8" width="28" height="54" rx="5" fill="#8a8a94" stroke="#5f6570" stroke-width="3"/>'
+    + '<rect x="18" y="22" width="144" height="26" rx="4" fill="#d3a86b" stroke="#8a6a45" stroke-width="3.5"/>'
+    + '<path d="M30 30 h120 M30 40 h120" stroke="#b8894a" stroke-width="2.5" opacity=".8"/></svg>';
+  var boardCharge = 0, boardDir = 1, boardHold = false, boardLo = 0, boardHi = 0,
+      boardEl = null, barFill = null, boardBusy = false;
+
+  function startBoard(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    boardCharge = 0; boardDir = 1; boardHold = false; boardBusy = false;
+    var width = 0.3 - score*0.03;                       // green band narrows each board
+    boardLo = 0.55; boardHi = Math.min(0.97, 0.55 + width);
+    sceneDiv("left:"+(r.width*0.5 - r.width*0.13)+"px;top:"+(r.height*0.3)+"px;width:"
+      + (r.width*0.18)+"px;", FIGHTER_SVG);
+    boardEl = sceneDiv("left:"+(r.width*0.42)+"px;top:"+(r.height*0.52)+"px;width:"
+      + (r.width*0.36)+"px;transition:transform .25s ease, opacity .25s ease;", BOARD_SVG);
+    var bw = r.width*0.6, bx = (r.width-bw)/2, by = r.height*0.86;
+    sceneDiv("left:"+bx+"px;top:"+by+"px;width:"+bw+"px;height:26px;border-radius:999px;"
+      + "background:rgba(0,0,0,.45);border:3px solid rgba(255,255,255,.65);box-sizing:border-box;", "");
+    sceneDiv("left:"+(bx + bw*boardLo)+"px;top:"+by+"px;width:"+(bw*(boardHi-boardLo))+"px;height:26px;"
+      + "background:rgba(80,220,120,.55);border-left:3px solid #41c46a;border-right:3px solid #41c46a;"
+      + "box-sizing:border-box;", "");
+    barFill = sceneDiv("left:"+(bx+3)+"px;top:"+(by+3)+"px;width:0px;height:20px;border-radius:999px;"
+      + "background:linear-gradient(90deg,#ffc93c,#ff7d1f);", "");
+    barFill.dataset.w = bw - 6;
+    badge.classList.add("on");
+    badge.textContent = "🪓 hold, then let go on green";
+    startLoop();
+  }
+  function updateBoard(dt){
+    if(!boardHold || boardBusy) return;
+    boardCharge += boardDir*dt*0.85;
+    if(boardCharge >= 1){ boardCharge = 1; boardDir = -1; }
+    if(boardCharge <= 0){ boardCharge = 0; boardDir = 1; }
+    if(barFill) barFill.style.width = (boardCharge*parseFloat(barFill.dataset.w)) + "px";
+  }
+  function boardDown(){
+    if(boardBusy) return;
+    boardHold = true; boardCharge = 0; boardDir = 1;
+    tone(180, 0, .12, "sawtooth", .07);
+  }
+  function boardUp(){
+    if(!boardHold || boardBusy) return;
+    boardHold = false;
+    var hit = boardCharge >= boardLo && boardCharge <= boardHi;
+    if(hit){
+      boardBusy = true;
+      tone(120, 0, .2, "square", .18); tone(900, .05, .12, "square", .1);
+      boardEl.style.transform = "scale(1.12) rotate(-3deg)";
+      boardEl.style.opacity = "0";
+      celebrate("SMASH!");
+    } else {
+      softSound();
+      toast(boardCharge < boardLo ? "Not hard enough — hold longer!" : "Too hard — let go sooner!");
+      boardEl.style.transform = "translateX(6px)";
+      setTimeout(function(){ boardEl.style.transform = "translateX(0)"; }, 140);
+      boardCharge = 0;
+      if(barFill) barFill.style.width = "0px";
+    }
+  }
+
+  /* ================= LETTERS: kata caller (dojo) ================= */
+  var KATA_3 = ["BOW","JAB","HOP","TAP","ARM","LEG","FAN","AIM","RUN"];
+  var KATA_4 = ["KICK","CHOP","DUCK","SPIN","STEP","ROLL","LEAP","FIST","PALM","KNEE","BLOW","GRIP"];
+  var kataSeq = [], kataIdx = 0, kataShowing = false, kataWord = "";
+  function kataTile(letter, hidden){
+    return '<span class="lt-wrap"><span class="katacard'+(hidden ? " hid" : "")+'">'
+         + (hidden ? "?" : disp(letter)) + '</span></span>';
+  }
+  function startKata(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    sceneDiv("left:"+(r.width*0.5 - r.width*0.09)+"px;top:"+(r.height*0.08)+"px;width:"
+      + (r.width*0.18)+"px;", FIGHTER_SVG);
+    var pool = score < 2 ? KATA_3 : KATA_4;
+    kataWord = pool[Math.floor(Math.random()*pool.length)];
+    kataSeq = kataWord.split("");
+    var n = kataSeq.length;
+    kataIdx = 0;
+    var slot = r.width/(n + 0.7);
+    var sz = Math.min(slot*0.78, r.height*0.24);
+    for(var i=0;i<n;i++){
+      var e = addEnt(kataTile(kataSeq[i], false), slot*(i + 0.85), r.height*0.62, sz, "kata");
+      e.letter = kataSeq[i];
+    }
+    kataShowing = true;
+    badge.classList.add("on");
+    badge.textContent = "👀 read the move: " + disp(kataWord);
+    setTimeout(hideKata, 1600 + n*600);
+    stopLoop();
+  }
+  function hideKata(){
+    if(mode !== "letters" || gameKey !== "kata") return;
+    kataShowing = false;
+    for(var i=0;i<ents.length;i++){
+      if(ents[i].alive && ents[i].kind === "kata") entContent(ents[i], kataTile("?", true));
+    }
+    badge.textContent = "⌨️ now type the move!";
+    showTouchKeys(kataSeq.slice());
+  }
+  function typeKata(k){
+    if(kataShowing) return;
+    if(k !== kataSeq[kataIdx]){
+      softSound();
+      toast("Watch again!");
+      kataShowing = true;
+      for(var j=0;j<ents.length;j++)
+        if(ents[j].alive && ents[j].kind === "kata") entContent(ents[j], kataTile(ents[j].letter, false));
+      kataIdx = 0;
+      badge.textContent = "👀 read the move: " + disp(kataWord);
+      setTimeout(hideKata, 1400 + kataSeq.length*600);
+      return;
+    }
+    var list = [];
+    for(var i=0;i<ents.length;i++) if(ents[i].alive && ents[i].kind === "kata") list.push(ents[i]);
+    var e = list[kataIdx];
+    if(e){ entContent(e, kataTile(e.letter, false)); e.el.classList.add("munch"); }
+    stepSound();
+    kataIdx++;
+    if(kataIdx >= kataSeq.length) celebrate("PERFECT KATA!");
+  }
+
+  /* ================= ARROWS: pad kicks (dojo) ================= */
+  var padEls = {}, padDir = null, padHits = 0, padNeed = 0, padTimer = 0, padLimit = 0;
+  var PAD_POS = {up:[0.5,0.16], down:[0.5,0.84], left:[0.16,0.5], right:[0.84,0.5]};
+  function startPads(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    sceneDiv("left:"+(r.width*0.5 - r.width*0.075)+"px;top:"+(r.height*0.5 - r.height*0.2)+"px;width:"
+      + (r.width*0.15)+"px;", FIGHTER_SVG);
+    padEls = {};
+    var psz = Math.min(r.width, r.height)*0.17;
+    ["up","down","left","right"].forEach(function(d){
+      var e = addEnt(PAD_SVG, r.width*PAD_POS[d][0], r.height*PAD_POS[d][1], psz, "pad");
+      e.el.style.opacity = "0.4";
+      e.el.style.transition = "opacity .18s ease";
+      padEls[d] = e;
+    });
+    padHits = 0; padNeed = 6;
+    padLimit = score < 2 ? 0 : Math.max(1.5, 3.2 - score*0.45)/spd();   // a clock from round 3
+    badge.classList.add("on");
+    badge.textContent = "🦶 0 / " + padNeed;
+    nextPad();
+    startLoop();
+  }
+  function nextPad(){
+    var dirs = ["up","down","left","right"];
+    var d;
+    do { d = dirs[Math.floor(Math.random()*4)]; } while(d === padDir && Math.random() < 0.7);
+    for(var key in padEls){                       // clear every pad first, animation included
+      padEls[key].el.classList.remove("nudge","munch");
+      padEls[key].el.style.opacity = "0.4";
+    }
+    padDir = d;
+    var el = padEls[d].el;
+    el.style.opacity = "1";
+    void el.offsetWidth;
+    el.classList.add("nudge");
+    padTimer = padLimit;
+  }
+  function updatePads(dt){
+    if(!padLimit || !padDir) return;
+    padTimer -= dt;
+    if(padTimer <= 0){ softSound(); toast("Too slow — next one!"); nextPad(); }
+  }
+  function padStep(dir){
+    if(busy || !padDir) return;
+    if(dir !== padDir){ softSound(); return; }
+    var e = padEls[padDir];
+    e.el.classList.remove("nudge");               // stop it flashing the moment it is hit
+    e.el.classList.remove("munch"); void e.el.offsetWidth; e.el.classList.add("munch");
+    tone(160, 0, .1, "square", .16); tone(760, .04, .1, "square", .1);
+    padHits++;
+    badge.textContent = "🦶 " + padHits + " / " + padNeed;
+    if(padHits >= padNeed){ padDir = null; celebrate("HIYAA!"); }
+    else nextPad();
+  }
+
+  /* ================= DINOSAURS: shared art ================= */
+  var SKEL_SAURO = '<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">'
+    + '<g fill="none" stroke="#efe6cf" stroke-width="9" stroke-linecap="round">'
+    + '<path d="M58 54 q46 -22 92 -2 q34 14 62 6"/>'                       // spine
+    + '<path d="M212 58 q26 6 40 26 q-22 -6 -38 4"/>'                      // tail
+    + '<path d="M78 60 q-4 26 2 40 M104 62 q-4 28 2 42 M130 64 q-4 28 2 42 M156 62 q-4 26 2 40"/>'
+    + '<path d="M96 104 q-10 26 -4 38 M168 104 q10 26 4 38"/>'             // legs
+    + '</g>'
+    + '<path d="M22 44 q22 -20 44 -4 q10 8 -2 18 q-20 10 -42 -2 z" fill="#efe6cf"/>'
+    + '<circle cx="40" cy="44" r="4.5" fill="#6b5a3a"/>'
+    + '<path d="M24 58 q22 8 40 0" fill="none" stroke="#efe6cf" stroke-width="7" stroke-linecap="round"/></svg>';
+
+  var SKEL_REX = '<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">'
+    + '<g fill="none" stroke="#efe6cf" stroke-width="9" stroke-linecap="round">'
+    + '<path d="M74 48 q40 -10 76 6 q30 12 56 -2"/>'
+    + '<path d="M206 52 q30 12 46 34 q-26 -4 -44 8"/>'
+    + '<path d="M96 56 q-4 22 2 34 M124 60 q-4 22 2 34 M152 60 q-4 20 2 32"/>'
+    + '<path d="M120 96 q-14 22 -6 42 M170 92 q14 22 6 42"/>'
+    + '<path d="M88 62 q-14 10 -6 22"/>'
+    + '</g>'
+    + '<path d="M18 36 q34 -16 56 6 q6 12 -8 18 q-30 8 -50 -6z" fill="#efe6cf"/>'
+    + '<circle cx="42" cy="38" r="5" fill="#6b5a3a"/>'
+    + '<path d="M20 60 q28 10 50 2" fill="none" stroke="#efe6cf" stroke-width="8" stroke-linecap="round"/>'
+    + '<path d="M26 44 l6 8 M38 46 l5 8 M50 46 l5 8" stroke="#6b5a3a" stroke-width="3"/></svg>';
+  var SKEL_STEGO = '<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">'
+    + '<g fill="none" stroke="#efe6cf" stroke-width="9" stroke-linecap="round">'
+    + '<path d="M50 70 q54 -34 110 -6 q34 16 62 10"/>'
+    + '<path d="M218 74 q28 4 40 22"/>'
+    + '<path d="M80 78 q-4 22 2 34 M112 68 q-4 26 2 38 M148 70 q-4 24 2 36 M182 78 q-4 20 2 32"/>'
+    + '<path d="M92 108 q-10 22 -4 34 M176 104 q10 22 4 34"/></g>'
+    + '<g fill="#efe6cf">'
+    + '<path d="M78 56 l10 -22 l12 20z"/><path d="M106 46 l10 -24 l13 22z"/>'
+    + '<path d="M138 44 l11 -24 l13 23z"/><path d="M172 52 l10 -22 l12 21z"/></g>'
+    + '<path d="M22 78 q22 -16 40 -4 q6 8 -4 14 q-18 8 -36 -2z" fill="#efe6cf"/>'
+    + '<circle cx="38" cy="76" r="4.5" fill="#6b5a3a"/></svg>';
+  var SKEL_TRIKE = '<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">'
+    + '<g fill="none" stroke="#efe6cf" stroke-width="9" stroke-linecap="round">'
+    + '<path d="M92 62 q48 -18 98 0 q28 10 50 4"/>'
+    + '<path d="M104 72 q-4 22 2 34 M136 70 q-4 24 2 36 M170 72 q-4 22 2 34"/>'
+    + '<path d="M114 104 q-10 22 -4 34 M180 102 q10 22 4 34"/></g>'
+    + '<path d="M44 34 q52 -8 54 30 q2 36 -54 28 q-22 -30 0 -58z" fill="#efe6cf"/>'
+    + '<path d="M10 56 q20 -14 36 -8 q-16 14 -36 8z" fill="#efe6cf"/>'
+    + '<path d="M30 40 l-20 -16 M32 70 l-22 14" stroke="#efe6cf" stroke-width="8" stroke-linecap="round"/>'
+    + '<circle cx="42" cy="58" r="4.5" fill="#6b5a3a"/></svg>';
+  var SKEL_PTERO = '<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">'
+    + '<g fill="none" stroke="#efe6cf" stroke-width="9" stroke-linecap="round">'
+    + '<path d="M96 76 q34 -8 62 0"/>'
+    + '<path d="M104 72 q-46 -46 -86 -34 q34 16 52 44"/>'
+    + '<path d="M150 72 q46 -46 88 -34 q-34 16 -54 44"/>'
+    + '<path d="M120 84 q-6 22 0 34 M140 84 q6 22 0 34"/></g>'
+    + '<path d="M62 62 q34 -14 42 10 q-18 12 -44 2z" fill="#efe6cf"/>'
+    + '<path d="M88 52 q26 -14 30 4" fill="none" stroke="#efe6cf" stroke-width="7"/>'
+    + '<circle cx="86" cy="66" r="4.5" fill="#6b5a3a"/></svg>';
+
+  /* ================= MOUSE: fossil dig (dinosaurs) ================= */
+  var digCtx = null, digging = false, digGoal = 0, digDone = false, digCheck = 0, digLast = 0;
+  function startDig(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    var SKELETONS = [SKEL_SAURO, SKEL_REX, SKEL_STEGO, SKEL_TRIKE, SKEL_PTERO];
+    sceneDiv("left:8%;top:26%;width:84%;", SKELETONS[score % SKELETONS.length]);
+    digCanvas.style.transition = "none";
+    digCanvas.style.opacity = "1";                 // the win fades it out — put it back
+    digCanvas.width = Math.round(r.width);
+    digCanvas.height = Math.round(r.height);
+    digCtx = digCanvas.getContext("2d");
+    digCtx.fillStyle = "#8a6a45";
+    digCtx.fillRect(0, 0, digCanvas.width, digCanvas.height);
+    for(var i=0;i<900;i++){                                  // grit so it reads as dirt
+      digCtx.fillStyle = ["#7d5f3d","#9b7a52","#6d5133","#a88a5e"][i % 4];
+      digCtx.beginPath();
+      digCtx.arc(Math.random()*digCanvas.width, Math.random()*digCanvas.height,
+                 2 + Math.random()*9, 0, 6.3);
+      digCtx.fill();
+    }
+    digCtx.globalCompositeOperation = "destination-out";
+    digGoal = 0.52 + score*0.04;
+    digDone = false; digging = false; digCheck = 0; digLast = 0;
+    badge.classList.add("on");
+    badge.textContent = "🪥 0%";
+    startLoop();
+  }
+  function digAt(pt){
+    if(!digCtx || digDone) return;
+    var r = rect(), br = Math.min(r.width, r.height)*0.075;
+    digCtx.beginPath();
+    digCtx.arc(pt.x, pt.y, br, 0, 6.3);
+    digCtx.fill();
+    if(performance.now() - digLast > 110){ digLast = performance.now(); tone(240 + Math.random()*120, 0, .05, "sawtooth", .05); }
+  }
+  function updateDig(dt){
+    if(!digCtx || digDone) return;
+    digCheck -= dt;
+    if(digCheck > 0) return;
+    digCheck = 0.35;
+    var w = digCanvas.width, h = digCanvas.height;
+    var data = digCtx.getImageData(0, 0, w, h).data;
+    var clear = 0, total = 0;
+    for(var y=0; y<h; y+=10){
+      for(var x=0; x<w; x+=10){
+        total++;
+        if(data[(y*w + x)*4 + 3] < 40) clear++;
+      }
+    }
+    var pct = clear/Math.max(total,1);
+    badge.textContent = "🪥 " + Math.min(100, Math.round(pct/digGoal*100)) + "%";
+    if(pct >= digGoal){ digDone = true; digCanvas.style.transition = "opacity .6s"; digCanvas.style.opacity = "0";
+      setTimeout(function(){ if(mode === "mouse") celebrate("WHAT A FIND!"); }, 400); }
+  }
+  function digDown(pt){ digging = true; digAt(pt); }
+  function digMove(pt){ if(digging) digAt(pt); }
+  function digUp(){ digging = false; }
+
+  /* ================= LETTERS: footprint trail (dinosaurs) ================= */
+  var PRINT_SVG = '<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M16 42 q-6 -18 14 -20 q20 2 14 20 q-4 10 -14 10 q-10 0 -14 -10z" fill="#5d4426" opacity=".85"/>'
+    + '<circle cx="15" cy="18" r="6" fill="#5d4426" opacity=".85"/>'
+    + '<circle cx="30" cy="12" r="6.5" fill="#5d4426" opacity=".85"/>'
+    + '<circle cx="45" cy="18" r="6" fill="#5d4426" opacity=".85"/></svg>';
+  var trailSeq = [], trailIdx = 0, trailEnts = [], trailDino = null;
+  function startTrail(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    var n = 4 + Math.floor(score/2);
+    trailSeq = pickLetters(n);
+    trailIdx = 0; trailEnts = [];
+    var slot = r.width/(n + 0.8);
+    var sz = Math.min(slot*0.72, Math.min(r.width, r.height)*0.15);
+    for(var i=0;i<n;i++){
+      var py = r.height*0.62 + Math.sin(i*0.9)*r.height*0.09;
+      var e = addEnt('<span class="lt-wrap"><span class="lt-emoji">'+PRINT_SVG+'</span>'
+                   + '<span class="lt-key">'+disp(trailSeq[i])+'</span></span>',
+                     slot*(i + 0.9), py, sz, "print");
+      e.letter = trailSeq[i];
+      e.el.style.opacity = "0.45";
+      e.el.style.transition = "opacity .25s ease";
+      trailEnts.push(e);
+    }
+    setHero("🦕", Math.min(r.width, r.height)*0.2);
+    hx = slot*0.25; hy = trailEnts[0].y - r.height*0.1; drawHero(true);
+    markTrail();
+    badge.classList.add("on");
+    badge.textContent = "🐾 0 / " + n;
+    stopLoop();
+  }
+  function markTrail(){
+    for(var i=0;i<trailEnts.length;i++)
+      trailEnts[i].el.style.opacity = i === trailIdx ? "1" : (i < trailIdx ? "0.8" : "0.45");
+    if(trailIdx < trailEnts.length){
+      var el = trailEnts[trailIdx].el;
+      el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge");
+      showTouchKeys([trailSeq[trailIdx]]);
+    }
+  }
+  function typeTrail(k){
+    if(trailIdx >= trailSeq.length) return;
+    if(k !== trailSeq[trailIdx]){ softSound(); return; }
+    var e = trailEnts[trailIdx];
+    markTile(e);
+    e.el.classList.remove("nudge");
+    stepSound();
+    var r = rect();
+    trailIdx++;
+    badge.textContent = "🐾 " + trailIdx + " / " + trailSeq.length;
+    var tx = e.x, ty = e.y - r.height*0.1, fx = hx, fy = hy, t0 = performance.now();
+    (function frame(){
+      var kk = Math.min((performance.now()-t0)/260, 1), ee = 1 - Math.pow(1-kk, 2);
+      hx = fx + (tx-fx)*ee;
+      hy = fy + (ty-fy)*ee - Math.sin(ee*Math.PI)*r.height*0.05;
+      drawHero(true);                               // 🦕 faces left, so mirror it
+      if(kk < 1) requestAnimationFrame(frame);
+      else if(trailIdx >= trailSeq.length) celebrate("GOOD TRACKING!");
+      else markTrail();
+    })();
+  }
+
+  /* ================= ARROWS: lava leap (dinosaurs) ================= */
+  var lvCols = 5, lvRows = 6, lvCW = 0, lvRH = 0, lvCol = 2, lvRow = 5, lvStones = [], lvHop = false;
+  function startLeap(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    lvCols = 5 + Math.floor(score/2);              // wider and deeper river each crossing
+    lvRows = 6 + Math.floor(score/2);              // needs depth, or a straight column is likely
+    lvCW = r.width/lvCols; lvRH = r.height/lvRows;
+    sceneDiv("left:0;top:0;width:100%;height:"+lvRH+"px;background:#6b8a3a;"
+      + "border-bottom:6px solid #4d6628;", "");
+    sceneDiv("left:0;bottom:0;width:100%;height:"+lvRH+"px;background:#6b8a3a;"
+      + "border-top:6px solid #4d6628;", "");
+
+    // Carve a route to the far bank, scatter spare stones, then check the FINISHED puzzle:
+    // if any column happens to run straight up, holding the up arrow would solve it.
+    var lanes = lvRows - 2;
+    var want = Math.max(2, Math.round(lanes*0.6));     // sideways steps the answer must need
+    var taken, path, startCol, attempt = 0;
+    while(true){
+      attempt++;
+      taken = {}; path = [];
+      var col = Math.floor(Math.random()*lvCols);
+      startCol = col;
+      for(var row = lvRows-2; row >= 1; row--){
+        if(!taken[col+","+row]){ path.push([col, row]); taken[col+","+row] = 1; }  // straight up first
+        var shift;
+        if(col === 0) shift = 1 + Math.floor(Math.random()*2);
+        else if(col === lvCols-1) shift = -1 - Math.floor(Math.random()*2);
+        else shift = (Math.random() < 0.5 ? -1 : 1)*(1 + Math.floor(Math.random()*2));
+        var target = Math.min(Math.max(col + shift, 0), lvCols-1);
+        var step = target > col ? 1 : -1;
+        while(col !== target){
+          col += step;
+          if(!taken[col+","+row]){ path.push([col, row]); taken[col+","+row] = 1; }
+        }
+      }
+      var spares = 1 + Math.floor(score/2);
+      for(var k=0; k<spares; k++){
+        var c = Math.floor(Math.random()*lvCols), rw = 1 + Math.floor(Math.random()*(lvRows-2));
+        if(taken[c+","+rw]) continue;
+        taken[c+","+rw] = 1;
+        path.push([c, rw]);
+      }
+      if(leapReachable(taken, startCol) && leapMinSide(taken, startCol) >= want) break;
+      if(attempt >= 80) break;                        // vanishingly unlikely; never loop forever
+    }
+    lvStones = [];
+    var ssz = Math.min(lvCW, lvRH)*0.82;
+    for(var i=0;i<path.length;i++){
+      var st = addEnt("🪨", (path[i][0]+0.5)*lvCW, (path[i][1]+0.5)*lvRH, ssz, "stone");
+      st.col = path[i][0]; st.row = path[i][1]; st.up = true;
+      lvStones.push(st);
+    }
+
+    setHero("🦖", Math.min(lvCW, lvRH)*0.85);
+    lvCol = startCol; lvRow = lvRows-1;
+    hx = (lvCol+0.5)*lvCW; hy = (lvRow+0.5)*lvRH; drawHero();
+    lvHop = false;
+    badge.classList.add("on");
+    badge.textContent = "🌋 find the way across";
+    stopLoop();
+  }
+  // walk the grid the same way the player can — 4 directions, banks always safe
+  function leapReachable(taken, startCol){
+    var seen = {}, queue = [[startCol, lvRows-1]];
+    seen[startCol+","+(lvRows-1)] = 1;
+    while(queue.length){
+      var cur = queue.shift(), cc = cur[0], rr = cur[1];
+      if(rr === 0) return true;
+      var moves = [[cc,rr-1],[cc,rr+1],[cc-1,rr],[cc+1,rr]];
+      for(var i=0;i<moves.length;i++){
+        var nc = moves[i][0], nr = moves[i][1];
+        if(nc < 0 || nc > lvCols-1 || nr < 0 || nr > lvRows-1) continue;
+        var key = nc+","+nr;
+        if(seen[key]) continue;
+        var bank = (nr === 0 || nr === lvRows-1);
+        if(!bank && !taken[key]) continue;
+        seen[key] = 1;
+        queue.push([nc, nr]);
+      }
+    }
+    return false;
+  }
+  // 0-1 BFS over the finished puzzle: hops up and down are free, hops sideways in the river
+  // cost one. The result is the fewest sideways steps ANY solution can get away with.
+  function leapMinSide(taken, startCol){
+    var dist = {}, dq = [], sk = startCol+","+(lvRows-1);
+    dist[sk] = 0; dq.push([startCol, lvRows-1]);
+    var bestTop = 1e9;
+    while(dq.length){
+      var cur = dq.shift(), cc = cur[0], rr = cur[1], d = dist[cc+","+rr];
+      if(rr === 0){ if(d < bestTop) bestTop = d; continue; }
+      var moves = [[cc,rr-1,0],[cc,rr+1,0],[cc-1,rr,1],[cc+1,rr,1]];
+      for(var i=0;i<moves.length;i++){
+        var nc = moves[i][0], nr = moves[i][1];
+        if(nc < 0 || nc > lvCols-1 || nr < 0 || nr > lvRows-1) continue;
+        var bank = (nr === 0 || nr === lvRows-1);
+        if(!bank && !taken[nc+","+nr]) continue;
+        var cost = (moves[i][2] && !bank) ? 1 : 0;     // shuffling along a bank is free
+        var key = nc+","+nr, nd = d + cost;
+        if(dist[key] === undefined || nd < dist[key]){
+          dist[key] = nd;
+          if(cost === 0) dq.unshift([nc, nr]); else dq.push([nc, nr]);
+        }
+      }
+    }
+    return bestTop;
+  }
+  function stoneAt(col, row){
+    for(var i=0;i<lvStones.length;i++)
+      if(lvStones[i].up && lvStones[i].col === col && lvStones[i].row === row) return lvStones[i];
+    return null;
+  }
+  function leapStep(dir){
+    if(busy || lvHop) return;
+    var nc = lvCol, nr = lvRow;
+    if(dir === "up") nr--; if(dir === "down") nr++;
+    if(dir === "left") nc--; if(dir === "right") nc++;
+    if(nr < 0 || nr > lvRows-1 || nc < 0 || nc > lvCols-1) return;
+    var bank = (nr === 0 || nr === lvRows-1);
+    if(!bank && !stoneAt(nc, nr)){ thudSound(); return; }       // never let them hop into lava
+    lvCol = nc; lvRow = nr;
+    lvHop = true; stepSound();
+    var fx = hx, fy = hy, tx = (nc+0.5)*lvCW, ty = (nr+0.5)*lvRH, t0 = performance.now();
+    (function frame(){
+      var k = Math.min((performance.now()-t0)/170, 1), e = 1 - Math.pow(1-k, 2);
+      hx = fx + (tx-fx)*e; hy = fy + (ty-fy)*e - Math.sin(e*Math.PI)*lvRH*0.35;
+      drawHero();
+      if(k < 1) requestAnimationFrame(frame);
+      else { lvHop = false; if(lvRow === 0) celebrate("MADE IT!"); }
+    })();
+  }
+
+  var NEST_SVG = '<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">'
+    + '<ellipse cx="60" cy="88" rx="56" ry="11" fill="#7a5a34"/>'
+    + '<path d="M8 88 q14 -62 52 -62 q38 0 52 62 z" fill="#a37a48"/>'
+    + '<path d="M22 88 q10 -44 38 -44 q28 0 38 44" fill="none" stroke="#8a6438" stroke-width="4" opacity=".7"/>'
+    + '<ellipse cx="60" cy="60" rx="15" ry="12" fill="#3d2b16"/></svg>';
+  var PICNIC_SVG = '<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="6" y="34" width="108" height="60" rx="8" fill="#e8443a"/>'
+    + '<g stroke="#ffffff" stroke-width="7" opacity=".85">'
+    + '<path d="M28 34 v60 M56 34 v60 M84 34 v60 M6 52 h108 M6 76 h108"/></g>'
+    + '<ellipse cx="44" cy="38" rx="20" ry="9" fill="#f3e2c7" stroke="#c9b493" stroke-width="3"/>'
+    + '<path d="M78 38 q8 -22 18 -2 q6 12 -6 14 q-12 2 -12 -12z" fill="#ffd84d"/></svg>';
+
+  /* ================= MOUSE: ant trail (bugs) ================= */
+  var trailPts = [], trailDrawing = false, antsWalking = false, antNest = null, antFood = null;
+  function startAnts(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    drawLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    drawLayer.setAttribute("viewBox", "0 0 "+r.width+" "+r.height);
+    // nest on one side, picnic on the other, further apart each round
+    var side = score % 2 === 0 ? 1 : -1;
+    var nx = side > 0 ? r.width*0.12 : r.width*0.88;
+    var fx = side > 0 ? r.width*0.88 : r.width*0.12;
+    var ny = r.height*(0.2 + Math.random()*0.6), fy = r.height*(0.2 + Math.random()*0.6);
+    var m = Math.min(r.width, r.height);
+    sceneDiv("left:"+(nx - m*0.11)+"px;top:"+(ny - m*0.1)+"px;width:"+(m*0.22)+"px;", NEST_SVG);
+    sceneDiv("left:"+(fx - m*0.1)+"px;top:"+(fy - m*0.09)+"px;width:"+(m*0.2)+"px;", PICNIC_SVG);
+    antNest = {x:nx, y:ny}; antFood = {x:fx, y:fy};
+    trailPts = []; trailDrawing = false; antsWalking = false;
+    // obstacles sit ON the straight line between nest and picnic, so the direct route
+    // is always blocked and the path has to bend around them
+    var rocks = Math.min(1 + Math.floor(score/2), 3);
+    var spread = [[0.5],[0.36,0.64],[0.3,0.5,0.7]][rocks-1];
+    for(var i=0;i<rocks;i++){
+      var t = spread[i] + (Math.random()-0.5)*0.06;
+      addEnt("🪨", nx + (fx-nx)*t, ny + (fy-ny)*t, m*0.14, "rock");
+    }
+    badge.classList.add("on");
+    badge.textContent = "🐜 draw a path from the nest to the food";
+    stopLoop();
+  }
+  function antsDown(pt){
+    if(antsWalking) return;
+    var d = Math.hypot(pt.x - antNest.x, pt.y - antNest.y);
+    if(d > Math.min(rect().width, rect().height)*0.16){
+      softSound(); toast("Start at the ant nest!");
+      return;
+    }
+    trailDrawing = true;
+    trailPts = [{x:antNest.x, y:antNest.y}];
+    drawLayer.innerHTML = "";
+    pickSound();
+  }
+  function antsMove(pt){
+    if(!trailDrawing) return;
+    var last = trailPts[trailPts.length-1];
+    if(Math.hypot(pt.x-last.x, pt.y-last.y) < 12) return;
+    trailPts.push({x:pt.x, y:pt.y});
+    var ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    ln.setAttribute("class", "antline");
+    ln.setAttribute("x1", last.x); ln.setAttribute("y1", last.y);
+    ln.setAttribute("x2", pt.x);   ln.setAttribute("y2", pt.y);
+    drawLayer.appendChild(ln);
+  }
+  function antsUp(pt){
+    if(!trailDrawing) return;
+    trailDrawing = false;
+    var r = rect(), m = Math.min(r.width, r.height);
+    var end = trailPts[trailPts.length-1];
+    if(Math.hypot(end.x-antFood.x, end.y-antFood.y) > m*0.17){
+      softSound(); toast("Finish at the picnic!");
+      drawLayer.innerHTML = "";
+      trailPts = [];
+      return;
+    }
+    for(var i=0;i<ents.length;i++){                         // a path through a rock will not do
+      var e = ents[i];
+      if(!e.alive || e.kind !== "rock") continue;
+      for(var k=0;k<trailPts.length;k++){
+        if(Math.hypot(trailPts[k].x-e.x, trailPts[k].y-e.y) < e.r*0.95){
+          thudSound(); toast("That way is blocked — go around!");
+          drawLayer.innerHTML = "";
+          trailPts = [];
+          return;
+        }
+      }
+    }
+    marchAnts();
+  }
+  function marchAnts(){
+    antsWalking = true;
+    badge.textContent = "🐜 off they go!";
+    var r = rect(), sz = Math.min(r.width, r.height)*0.075;
+    var team = [], n = 5;
+    for(var i=0;i<n;i++){
+      var a = addEnt("🐜", antNest.x, antNest.y, sz, "ant");
+      a.el.style.opacity = "0";
+      team.push(a);
+    }
+    var arrived = 0;
+    team.forEach(function(a, idx){
+      setTimeout(function(){
+        a.el.style.opacity = "1";
+        var step = 0, t0 = performance.now();
+        (function frame(){
+          var travel = (performance.now()-t0)/2200;               // fraction along the trail
+          var pos = Math.min(travel, 1)*(trailPts.length-1);
+          var i0 = Math.floor(pos), i1 = Math.min(i0+1, trailPts.length-1), f = pos - i0;
+          a.x = trailPts[i0].x + (trailPts[i1].x-trailPts[i0].x)*f;
+          a.y = trailPts[i0].y + (trailPts[i1].y-trailPts[i0].y)*f;
+          drawEnt(a);
+          if(++step % 14 === 0) stepSound();
+          if(travel < 1) requestAnimationFrame(frame);
+          else {
+            chimeSound();
+            if(++arrived >= n) celebrate("WELL MARCHED!");
+          }
+        })();
+      }, idx*220);
+    });
+  }
+
+  /* ================= LETTERS: bug sounds (bugs) ================= */
+  var BUG_WORDS = [["🐜","ANT"],["🐝","BEE"],["🐛","CATERPILLAR"],["🦋","BUTTERFLY"],["🐞","LADYBIRD"],
+                   ["🕷️","SPIDER"],["🐌","SNAIL"],["🦗","GRASSHOPPER"],["🪲","BEETLE"],["🪰","FLY"],
+                   ["🦟","MOSQUITO"],["🪱","WORM"]];
+  var bugWanted = null;
+  var bugSeen = [];
+  function startBugs(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    hero.classList.remove("on");
+    if(score === 0) bugSeen = [];
+    badge.classList.remove("on");
+    nextBug();
+    stopLoop();
+  }
+  function nextBug(){
+    if(mode !== "letters" || gameKey !== "bugs") return;
+    clearEnts(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    var pool = BUG_WORDS.filter(function(b){ return bugSeen.indexOf(b[1]) === -1; });
+    if(!pool.length){ bugSeen = []; pool = BUG_WORDS.slice(); }
+    bugWanted = pool[Math.floor(Math.random()*pool.length)];
+    bugSeen.push(bugWanted[1]);
+
+    addEnt(bugWanted[0], r.width/2, r.height*0.36, m*0.3, "bug");
+
+    var word = bugWanted[1];
+    var html = '<span class="bugblank">' + disp(word[0]) + '</span>';
+    var rest = "";
+    for(var i=1;i<word.length;i++) rest += disp(word[i]);
+    sceneDiv("left:50%;top:" + (r.height*0.66) + "px;transform:translateX(-50%);"
+      + "background:var(--card);color:var(--ink);border-radius:20px;padding:10px 26px 14px;"
+      + "box-shadow:0 7px 0 rgba(0,0,0,.3);white-space:nowrap;font-weight:700;"
+      + "font-size:clamp(1.8rem," + (Math.min(m*0.13, 62)) + "px,4rem);line-height:1.1;",
+      '<span class="bugblank">?</span>' + rest);
+    showTouchKeys([word[0]]);
+  }
+  function typeBugs(k){
+    if(!bugWanted) return;
+    if(k !== bugWanted[1][0]){ softSound(); return; }
+    chimeSound();
+    var blank = sceneLayer.querySelector(".bugblank");
+    if(blank){ blank.textContent = disp(bugWanted[1][0]); blank.style.color = "#41c46a";
+               blank.style.borderBottomColor = "#41c46a"; }
+    bugWanted = null;
+    setTimeout(function(){ celebrate("THAT'S IT!"); }, 600);
+  }
+
+  /* ================= ARROWS: caterpillar crawl (bugs) ================= */
+  var CAT_HEAD = '<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M13 9 l3 9 M31 9 l-3 9" stroke="#a8321f" stroke-width="3.5" stroke-linecap="round"/>'
+    + '<circle cx="12" cy="6" r="3.4" fill="#a8321f"/><circle cx="32" cy="6" r="3.4" fill="#a8321f"/>'
+    + '<circle cx="22" cy="25" r="18" fill="#e8443a" stroke="#b52f22" stroke-width="2.5"/>'
+    + '<circle cx="15" cy="21" r="5" fill="#ffffff"/><circle cx="29" cy="21" r="5" fill="#ffffff"/>'
+    + '<circle cx="15.5" cy="22" r="2.4" fill="#22303a"/><circle cx="29.5" cy="22" r="2.4" fill="#22303a"/>'
+    + '<path d="M16 32 q6 5 12 0" fill="none" stroke="#8f2418" stroke-width="2.6" stroke-linecap="round"/></svg>';
+  var COCOON_SVG = '<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M18 6 q12 -6 24 0" stroke="#7a5a34" stroke-width="4" fill="none"/>'
+    + '<path d="M30 8 v10" stroke="#7a5a34" stroke-width="4"/>'
+    + '<ellipse cx="30" cy="46" rx="20" ry="28" fill="#c9a06a" stroke="#8a6a45" stroke-width="3"/>'
+    + '<path d="M14 36 q16 8 32 0 M14 50 q16 8 32 0 M16 62 q14 6 28 0" fill="none" stroke="#a8824c" stroke-width="3"/></svg>';
+  function catSeg(i){
+    var light = i % 2 === 0;
+    return '<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">'
+      + '<circle cx="22" cy="22" r="17" fill="'+(light ? "#8bc34a" : "#7cb342")+'" stroke="#5a8a2c" stroke-width="2.5"/>'
+      + '<circle cx="16" cy="16" r="4.5" fill="#a5d66b" opacity=".75"/></svg>';
+  }
+  // the hungry caterpillar's week: one fruit on Monday, two on Tuesday, and so on
+  var CRAWL_MENU = [["🍎"], ["🍐","🍐"], ["🍇","🍇","🍇"], ["🍓","🍓","🍓","🍓"],
+                    ["🍊","🍊","🍊","🍊","🍊"],
+                    ["🍰","🍦","🥒","🧀","🍭","🥧","🌭","🧁","🍉","🍃"]];
+  var ccCols = 0, ccRows = 0, ccCW = 0, ccRH = 0, ccBody = [], ccDir = "right",
+      ccNext = "right", ccTick = 0, ccStep = 0, ccLeaf = null, ccEaten = 0, ccNeed = 0,
+      ccMenu = [], ccMorphing = false;
+
+  function startCrawl(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    ccMorphing = false;
+    ccCols = 13; ccRows = 10;
+    ccCW = r.width/ccCols; ccRH = r.height/ccRows;
+    // stripes drawn on the grid lines, so the caterpillar always travels along the white
+    for(var vc=0; vc<ccCols; vc++)
+      sceneDiv("left:"+((vc+0.5)*ccCW - ccCW*0.3)+"px;top:0;width:"+(ccCW*0.6)+"px;height:100%;"
+        + "background:rgba(255,255,255,.55);", "");
+    for(var hr=0; hr<ccRows; hr++)
+      sceneDiv("left:0;top:"+((hr+0.5)*ccRH - ccRH*0.3)+"px;width:100%;height:"+(ccRH*0.6)+"px;"
+        + "background:rgba(255,255,255,.55);", "");
+    ccBody = [{c:3,r:5},{c:2,r:5},{c:1,r:5}];
+    ccDir = "right"; ccNext = "right";
+    ccStep = Math.max(0.26, 0.44 - score*0.03)/spd();
+    ccTick = ccStep;
+    ccMenu = CRAWL_MENU[Math.min(score, CRAWL_MENU.length-1)].slice();
+    ccEaten = 0; ccNeed = ccMenu.length;
+    placeLeaf();
+    drawCrawl();
+    badge.classList.add("on");
+    badge.textContent = ccMenu[0] + " 0 / " + ccNeed;
+    startLoop();
+  }
+  function placeLeaf(){
+    var c, rw, clash, tries = 0;
+    do {
+      clash = false;
+      c = Math.floor(Math.random()*ccCols); rw = Math.floor(Math.random()*ccRows);
+      for(var i=0;i<ccBody.length;i++) if(ccBody[i].c === c && ccBody[i].r === rw) clash = true;
+    } while(clash && ++tries < 60);
+    ccLeaf = {c:c, r:rw, food:ccMenu[Math.min(ccEaten, ccMenu.length-1)]};
+  }
+  function drawCrawl(){
+    clearEnts();
+    var sz = Math.min(ccCW, ccRH)*0.95;
+    if(ccLeaf) addEnt(ccLeaf.food, (ccLeaf.c+0.5)*ccCW, (ccLeaf.r+0.5)*ccRH, sz, "food");
+    for(var i=ccBody.length-1;i>=0;i--){                 // tail first so the head sits on top
+      addEnt(i === 0 ? CAT_HEAD : catSeg(i),
+             (ccBody[i].c+0.5)*ccCW, (ccBody[i].r+0.5)*ccRH,
+             i === 0 ? sz : sz*(0.92 - Math.min(i,8)*0.015), "seg");
+    }
+  }
+  function updateCrawl(dt){
+    if(ccMorphing) return;
+    ccTick -= dt;
+    if(ccTick > 0) return;
+    ccTick = ccStep;
+    var opp = {up:"down", down:"up", left:"right", right:"left"};
+    if(ccNext !== opp[ccDir]) ccDir = ccNext;
+    var head = ccBody[0], nc = head.c, nr = head.r;
+    if(ccDir === "up") nr--; if(ccDir === "down") nr++;
+    if(ccDir === "left") nc--; if(ccDir === "right") nc++;
+    nc = (nc + ccCols) % ccCols;                       // wrap round rather than crash into a wall
+    nr = (nr + ccRows) % ccRows;
+    for(var i=0;i<ccBody.length-1;i++){
+      if(ccBody[i].c === nc && ccBody[i].r === nr){
+        busy = true;
+        thudSound();
+        toast("Oops — you bumped your tail!");
+        setTimeout(function(){ busy = false; if(mode === "arrows") nextRound(); }, 1200);
+        return;
+      }
+    }
+    ccBody.unshift({c:nc, r:nr});
+    if(ccLeaf && nc === ccLeaf.c && nr === ccLeaf.r){
+      chimeSound();
+      ccEaten++;
+      badge.textContent = ccMenu[Math.min(ccEaten, ccMenu.length-1)] + " " + ccEaten + " / " + ccNeed;
+      if(ccEaten >= ccNeed){
+        ccLeaf = null;
+        drawCrawl();
+        if(score >= target-1) metamorphose(); else celebrate("MUNCH MUNCH!");
+        return;
+      }
+      placeLeaf();
+    } else ccBody.pop();
+    drawCrawl();
+  }
+  function crawlStep(dir){ ccNext = dir; }
+
+  function metamorphose(){
+    ccMorphing = true;
+    stopLoop();
+    var r = rect(), sz = Math.min(ccCW, ccRH)*0.95;
+    var hx2 = (ccBody[0].c+0.5)*ccCW, hy2 = (ccBody[0].r+0.5)*ccRH;
+    toast("Time to build a cocoon...");
+    var segs = [];
+    for(var i=0;i<ents.length;i++) if(ents[i].alive && ents[i].kind === "seg") segs.push(ents[i]);
+    segs.forEach(function(e, idx){                       // curl the whole body into one spot
+      setTimeout(function(){ glide(e, hx2, hy2, 420); }, idx*80);
+    });
+    setTimeout(function(){
+      clearEnts();
+      var coc = addEnt(COCOON_SVG, hx2, hy2, sz*1.7, "cocoon");
+      coc.el.classList.add("nudge");
+      tone(300, 0, .5, "sine", .12);
+      setTimeout(function(){
+        clearEnts();
+        var bf = addEnt("🦋", hx2, hy2, sz*1.9, "fly");
+        [900,1200,1500].forEach(function(f,i){ tone(f, i*0.12, .3, "triangle", .13); });
+        var t0 = performance.now();
+        (function frame(){
+          var k = Math.min((performance.now()-t0)/1500, 1);
+          bf.x = hx2 + Math.sin(k*9)*r.width*0.07;
+          bf.y = hy2 - k*r.height*0.5;
+          drawEnt(bf);
+          if(k < 1) requestAnimationFrame(frame);
+          else celebrate("A BUTTERFLY!");
+        })();
+      }, 1500);
+    }, segs.length*80 + 550);
+  }
+
   /* ================= round router ================= */
   var STARTERS = {maze:startMaze, dive:startDive, cross:startCross,
                   drive:startDrive, dodge:startDodge, catch:startCatch,
                   snap:startSnap, mud:startMud, track:startTrack, stars:startStars, pizza:startPizza,
                   letters:setupLetters, sonar:startSonar, feed:startFeed, toll:startToll,
-                  meteor:startMeteor, soup:startSoup};
+                  meteor:startMeteor, soup:startSoup,
+                  board:startBoard, kata:startKata, pads:startPads,
+                  dig:startDig, trail:startTrail, leap:startLeap,
+                  ants:startAnts, bugs:startBugs, crawl:startCrawl};
   var UPDATERS = {maze:updateMaze, dive:updateDive, cross:updateCross, drive:updateDrive,
                   dodge:updateDodge, catch:updateCatch,
                   snap:updateSnap, mud:updateMud, track:updateTrack,
-                  letters:updateLetters, meteor:updateMeteor};
-  var TYPERS = {sonar:typeSonar, feed:typeFeed, toll:typeToll, meteor:typeMeteor, soup:typeSoup};
+                  letters:updateLetters, meteor:updateMeteor,
+                  board:updateBoard, pads:updatePads, dig:updateDig, crawl:updateCrawl};
+  var TYPERS = {sonar:typeSonar, feed:typeFeed, toll:typeToll, meteor:typeMeteor, soup:typeSoup,
+                kata:typeKata, trail:typeTrail, bugs:typeBugs};
   function typeKey(k){
     if(mode !== "letters" || busy || !running) return;
     if(gameKey === "letters") pressLetter(k);
     else if(TYPERS[gameKey]) TYPERS[gameKey](k);
   }
-  var STEPPERS = {cross:crossStep};
-  var MOUSE_DOWN = {snap:snapDown, mud:mudDown, track:trackDown, stars:starsDown, pizza:pizzaDown};
-  var MOUSE_MOVE = {track:trackMove, pizza:pizzaMove};
-  var MOUSE_UP   = {track:trackUp,  pizza:pizzaUp};
+  var STEPPERS = {cross:crossStep, pads:padStep, leap:leapStep, crawl:crawlStep};
+  var MOUSE_DOWN = {snap:snapDown, mud:mudDown, track:trackDown, stars:starsDown, pizza:pizzaDown,
+                    board:boardDown, dig:digDown, ants:antsDown};
+  var MOUSE_MOVE = {track:trackMove, pizza:pizzaMove, dig:digMove, ants:antsMove};
+  var MOUSE_UP   = {track:trackUp,  pizza:pizzaUp, board:boardUp, dig:digUp, ants:antsUp};
 
   function fieldPos(ev){ var r = rect(); return {x:ev.clientX - r.left, y:ev.clientY - r.top}; }
   field.addEventListener("pointerdown", function(ev){
@@ -2749,6 +3670,15 @@
     feed:   ["🥕","Feed the Animals","The animals are hungry. Each one has a letter. Type it to throw them a snack."],
     toll:   ["🎫","Toll Booth Typer","Cars are waiting. Type the letter or number on the front car's plate to lift the barrier."],
     meteor: ["🛡️","Meteor Defence","Meteors are falling! Each one has a letter. Type it to zap the meteor before it lands."],
+    ants:   ["🐜","Ant Trail","The ants want to reach the picnic. Hold the mouse button and draw them a path from their nest, then let go and watch them march."],
+    bugs:   ["🔤","Bug Sounds","A bug appears with its name underneath, but the first letter is missing. Type the letter that belongs in the gap."],
+    crawl:  ["🐛","Caterpillar Crawl","Steer the hungry caterpillar with the arrow keys and eat all the food. You grow longer with every bite, so do not bump into your own tail!"],
+    dig:    ["🦴","Fossil Dig","There is a dinosaur buried in the dirt! Hold the mouse button down and sweep it around to brush the dirt away."],
+    trail:  ["🐾","Footprint Trail","Follow the footprints from left to right. Type the letter on each one to walk the dinosaur along."],
+    leap:   ["🌋","Lava Leap","Find the stepping stones that lead all the way across. Hop from stone to stone with the arrow keys."],
+    board:  ["💥","Board Breaker","Hold the mouse button down to build up power. Let go when the bar is on the green part to smash the board!"],
+    kata:   ["🧠","Kata Caller","Read the move word on the cards. When they flip over, type the word back from memory."],
+    pads:   ["🦶","Pad Kicks","One pad lights up at a time. Press the arrow key that points at it to kick!"],
     soup:   ["🍲","Soup Speller","The card shows a word. Type each letter in order to drop that ingredient in the pot."]
   };
   function track(name, data){
