@@ -145,7 +145,7 @@
 
   .ball{position:absolute;top:0;left:0;width:110px;height:110px;will-change:transform;cursor:pointer;
     filter:drop-shadow(0 6px 6px rgba(0,0,0,.3));touch-action:none;display:none;}
-  .m-shoot .ball,.m-maze .ball{display:block;}
+  .m-shoot .ball,.m-maze .ball,.g-penalty .ball{display:block;}
   .ball svg{width:100%;height:100%;display:block;pointer-events:none;}
   .ball.hover{filter:drop-shadow(0 8px 8px rgba(0,0,0,.3)) brightness(1.06);}
   .ball.ring::after{content:"";position:absolute;inset:-9px;border-radius:50%;
@@ -318,6 +318,19 @@
     transition:width .4s ease;}
 
   .g-soup .order{display:flex;}
+  .g-penalty .order,.g-shoal .order,.g-eggs .order{
+    display:flex;flex-direction:row;align-items:center;gap:14px;
+    left:50%;right:auto;top:auto;bottom:16px;transform:translateX(-50%);
+    padding:10px 26px;white-space:nowrap;}
+  .g-penalty .order .otitle,.g-shoal .order .otitle,.g-eggs .order .otitle{font-size:1.05rem;}
+  .shoal{display:flex;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;
+    width:100%;height:100%;gap:4%;font-size:.26em;line-height:1;box-sizing:border-box;padding:9%;
+    border:6px solid rgba(255,255,255,.9);border-radius:50%;
+    background:
+      repeating-linear-gradient(45deg,rgba(255,255,255,.3) 0 2px,transparent 2px 14px),
+      repeating-linear-gradient(-45deg,rgba(255,255,255,.3) 0 2px,transparent 2px 14px),
+      rgba(255,255,255,.12);
+    box-shadow:0 6px 14px rgba(0,0,0,.28);}
 
   /* celebration */
   .cheer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -478,7 +491,7 @@
 
     <div class="sheet" id="homeSheet">
       <h1>ControlQuest</h1>
-      <p class="sub">Click it! Type it! Move it!</p>
+      <p class="sub">Click it! Type it! Move it! Count it!</p>
       <div class="quest-done" id="questDone">🏆 Quest complete — every star collected!</div>
       <div class="tiles" id="tiles"></div>
       <div class="toolbar">
@@ -596,11 +609,15 @@
   /* ================= themes ================= */
   var THEMES = [
     {id:"football", name:"Football Training", emoji:"⚽", bg:"football",
-     arrows:{key:"maze",  name:"Cone Drills",     emoji:"🚧", target:10,
-             hint:"Roll the ball round the cones to the net. 10 drills wins."}},
+     maths:{key:"penalty", name:"Penalty Maths", emoji:"🔢", target:5,
+            hint:"Work out the sum, then shoot the ball into the net showing the answer."},
+     arrows:{key:"maze",  name:"Cone Drills",     emoji:"🚧", target:5,
+             hint:"Roll the ball round the cones to the net. Five drills, each one bigger."}},
     {id:"sea", name:"Under the Sea", emoji:"🐠", bg:"sea",
      letters:{key:"sonar", name:"Submarine Sonar", emoji:"🔊", target:5,
               hint:"Type the letter in the sonar ring to light up what is hiding in the dark."},
+     maths:{key:"shoal", name:"Count the Shoal", emoji:"🔢", target:5,
+            hint:"Count the fish in each shoal and click the one with the right number."},
      mouse:{key:"snap", name:"Deep Sea Snap", emoji:"📷", target:5,
             hint:"Your cursor is a camera. Click the fish to photograph them. 5 rolls of film wins."},
      arrows:{key:"dive",  name:"Treasure Dive",   emoji:"🤿", target:5,
@@ -608,10 +625,12 @@
     {id:"farm", name:"On the Farm", emoji:"🐔", bg:"farm",
      letters:{key:"feed", name:"Feed the Animals", emoji:"🥕", target:5,
               hint:"Each animal has a letter on its trough. Type it to toss them a snack."},
+     maths:{key:"eggs", name:"Egg Boxes", emoji:"🔢", target:5,
+            hint:"Some eggs are already in the box. Type how many more are needed to fill it."},
      mouse:{key:"mud", name:"Muddy Piglets", emoji:"🧽", target:5,
             hint:"Your cursor is a sponge. Click every muddy patch to scrub the piglets clean. 5 washes wins."},
-     arrows:{key:"cross", name:"Cross the Yard",  emoji:"🚜", target:10,
-             hint:"Hop the chicken up to the barn without meeting a tractor. 10 crossings wins."}},
+     arrows:{key:"cross", name:"Cross the Yard",  emoji:"🚜", target:5,
+             hint:"Hop the chicken up to the barn without meeting a tractor. 5 crossings wins."}},
     {id:"road", name:"On the Move", emoji:"🚗", bg:"road",
      letters:{key:"toll", name:"Toll Booth Typer", emoji:"🎫", target:5,
               hint:"Type the letter or number on the number plate to lift the barrier."},
@@ -625,7 +644,7 @@
      mouse:{key:"stars", name:"Constellation Creator", emoji:"⭐", target:5,
             hint:"Click the glowing star each time to join the dots and reveal the picture. 5 pictures wins."},
      arrows:{key:"dodge", name:"Asteroid Run",    emoji:"☄️", target:5,
-             hint:"Fly up to the planet without hitting a rock. 5 flights wins."}},
+             hint:"Fly up to the planet, steering around the falling rocks. 5 flights wins."}},
     {id:"bugs", name:"In the Garden", emoji:"🐞", bg:"garden",
      letters:{key:"bugs", name:"Bug Sounds", emoji:"🔤", target:5,
               hint:"The bug's name is missing its first letter. Type the letter that belongs there."},
@@ -635,7 +654,7 @@
              hint:"Eat all the food with the arrow keys. Six feasts and you become a butterfly!"}},
     {id:"dino", name:"Long Ago", emoji:"🦕", bg:"dino",
      letters:{key:"trail", name:"Footprint Trail", emoji:"🐾", target:5,
-              hint:"Type the letter on each footprint, left to right, to walk the dinosaur along the trail."},
+              hint:"The footprints spell a word. Type each letter in turn to walk the dinosaur along."},
      mouse:{key:"dig", name:"Fossil Dig", emoji:"🦴", target:5,
             hint:"Hold the mouse button and sweep the brush over the dirt to uncover the skeleton."},
      arrows:{key:"leap", name:"Lava Leap", emoji:"🌋", target:5,
@@ -955,8 +974,8 @@
   }
   var wonTheme = null, wonMode = null;
   var WIN_LINES = {
-    shoot:"Twenty goals scored!", letters:"Five players caught!", maze:"Ten cone drills done!",
-    dive:"Five treasure dives!", cross:"Ten safe crossings!", drive:"Five road trips finished!",
+    shoot:"Ten goals scored!", letters:"Five players caught!", maze:"Five cone drills done!",
+    dive:"Five treasure dives!", cross:"Five safe crossings!", drive:"Five road trips finished!",
     dodge:"Five safe landings!", catch:"Five recipes caught!",
     snap:"Five rolls of film used up!", mud:"Five piglets sparkling clean!", track:"Five trains through!",
     stars:"Five constellations drawn!", pizza:"Five pizzas made!",
@@ -964,7 +983,8 @@
     meteor:"Five meteor showers stopped!", soup:"Five soups spelled!",
     board:"Five boards smashed!", kata:"Five katas remembered!", pads:"Five rounds of kicks!",
     dig:"Five fossils uncovered!", trail:"Five trails followed!", leap:"Five lava crossings!",
-    ants:"Five ant trails drawn!", bugs:"Five bugs named!", crawl:"A beautiful butterfly!"
+    ants:"Five ant trails drawn!", bugs:"Five bugs named!", crawl:"A beautiful butterfly!",
+    penalty:"Five penalties scored!", shoal:"Five shoals counted!", eggs:"Five boxes filled!"
   };
   function showWin(){
     stopLoop();
@@ -1090,7 +1110,8 @@
     toll:"Type the number plate!", meteor:"Type the letter on a meteor!", soup:"Type the next letter!",
     board:"Hold the mouse button down!", kata:"Type the moves in order!", pads:"Press the arrow for the bright pad!",
     dig:"Hold the button and sweep!", trail:"Type the letter on the next print!", leap:"Press an arrow to hop!",
-    ants:"Draw a path from the nest!", bugs:"Type the first letter of the name!", crawl:"Steer with the arrow keys!"
+    ants:"Draw a path from the nest!", bugs:"Type the first letter of the name!", crawl:"Steer with the arrow keys!",
+    penalty:"Shoot at the right net!", shoal:"Click a shoal of fish!", eggs:"Type how many more!"
   };
   var lastInput = performance.now();
   function noteInput(){ lastInput = performance.now(); }
@@ -1241,7 +1262,7 @@
   function cellIdxX(v){ return Math.min(Math.max(Math.floor((v-ox)/cell), 0), gn-1); }
   function cellIdxY(v){ return Math.min(Math.max(Math.floor((v-oy)/cell), 0), gn-1); }
   function startMaze(){
-    gn = Math.min(5 + 2*Math.floor(score/2), 11);
+    gn = Math.min(5 + 2*score, 13);                // one size per round
     cells = genMaze(gn);
     gx = gn-1; gy = 0; cx = 0; cy = gn-1;
     drawMaze();
@@ -1350,7 +1371,7 @@
     lanes = [];
     var traffic = ["🐑","🚜","🐄","🛻","🐖"];
     var laneRows = [5,4,3,2,1];
-    var lvl = Math.floor(score/2);                 // two rounds per level
+    var lvl = score;                               // one step up per crossing
     var laneCount = Math.min(2 + lvl, laneRows.length);
     sceneLayer.innerHTML = "";
     for(var d=0; d<laneCount; d++){                // a dirt track wherever traffic runs
@@ -1482,41 +1503,68 @@
     }
   }
 
+  var dodgeFreeze = 0;
   function startDodge(){
     clearEnts();
-    var r = rect();
-    setHero("🚀", Math.min(r.width, r.height)*0.12);
+    var r = rect(), m = Math.min(r.width, r.height);
+    setHero("🚀", m*0.12);
     hx = r.width/2; hy = r.height*0.88; drawHero();
-    addEnt("🪐", r.width/2, r.height*0.08, Math.min(r.width,r.height)*0.16, "planet");
-    var rocks = 4 + score*2;
+    hero.classList.remove("frozen");
+    dodgeFreeze = 0;
+
+    var planet = addEnt("🪐", r.width/2, r.height*0.08, m*0.16, "planet");
+    planet.vy = 0;
+
+    // one rock peels off the planet and falls straight down the middle, so the way up
+    // is blocked from the first second and they have to steer around it
+    var blocker = addEnt("☄️", planet.x, planet.y + m*0.12, m*0.1, "rock");
+    blocker.vy = (100 + score*22)*spd();
+    blocker.vx = 0;
+
+    var rocks = 3 + score*2;
     for(var i=0;i<rocks;i++){
-      var e = addEnt("☄️", r.width*Math.random(), -Math.random()*r.height,
-                     Math.min(r.width,r.height)*0.1, "rock");
-      e.vy = (110 + score*32 + Math.random()*70)*spd();
-      e.vx = (Math.random()-0.5)*60*spd();
+      var e = addEnt("☄️", r.width*Math.random(), -Math.random()*r.height*0.9, m*0.1, "rock");
+      e.vy = (105 + score*30 + Math.random()*60)*spd();
+      e.vx = (Math.random()-0.5)*55*spd();
     }
     badge.classList.add("on");
     badge.textContent = "🪐 fly to the planet";
     startLoop();
   }
   function updateDodge(dt){
-    var r = rect();
-    moveHero(dt, 225, {t:0, b:1});
+    var r = rect(), m = Math.min(r.width, r.height);
+    if(dodgeFreeze > 0){
+      dodgeFreeze -= dt;
+      if(dodgeFreeze <= 0) hero.classList.remove("frozen");
+    } else {
+      moveHero(dt, 225, {t:0, b:1});
+    }
     drawHero(false);
+
     for(var i=0;i<ents.length;i++){
       var e = ents[i];
       if(!e.alive) continue;
-      if(e.kind === "rock"){
-        e.y += e.vy*dt; e.x += e.vx*dt;
-        if(e.x < 0 || e.x > r.width) e.vx *= -1;
-        if(e.y > r.height + 50){ e.y = -50; e.x = Math.random()*r.width; }
-        drawEnt(e);
-        if(hits(e)){
-          hurtHero(); toast("Careful! Back to the start.");
-          hx = r.width/2; hy = r.height*0.88; drawHero();
-        }
-      } else if(e.kind === "planet" && hits(e, 1)){
-        celebrate("LANDED!"); return;
+      if(e.kind === "planet"){
+        if(hits(e, 1)){ celebrate("LANDED!"); return; }
+        continue;
+      }
+      e.y += e.vy*dt;
+      e.x += (e.vx || 0)*dt;
+      if(e.x < 0 || e.x > r.width) e.vx *= -1;
+      if(e.y > r.height + m*0.12){                    // round again from the top
+        e.y = -m*0.12;
+        e.x = Math.random()*r.width;
+      }
+      drawEnt(e);
+      if(dodgeFreeze <= 0 && hits(e)){
+        killEnt(e);                                   // the rock breaks up
+        hurtHero();
+        toast("Bump! Hold steady a second.");
+        dodgeFreeze = 1;
+        hero.classList.add("frozen");
+        var repl = addEnt("☄️", Math.random()*r.width, -m*0.2, m*0.1, "rock");
+        repl.vy = (105 + score*30 + Math.random()*60)*spd();
+        repl.vx = (Math.random()-0.5)*55*spd();
       }
     }
   }
@@ -1959,15 +2007,31 @@
     {name:"a star",   emoji:"⭐", pts:[[.50,.12],[.58,.37],[.85,.38],[.63,.54],[.71,.80],[.50,.64],[.29,.80],[.37,.54],[.15,.38],[.42,.37]]},
     {name:"a house",  emoji:"🏠", pts:[[.50,.14],[.80,.40],[.74,.40],[.74,.80],[.26,.80],[.26,.40],[.20,.40]]},
     {name:"a fish",   emoji:"🐟", pts:[[.72,.36],[.86,.24],[.86,.72],[.72,.60],[.55,.72],[.30,.66],[.18,.48],[.30,.30],[.55,.26]]},
-    {name:"a cat",    emoji:"🐱", pts:[[.33,.34],[.37,.16],[.47,.29],[.57,.29],[.67,.16],[.71,.34],[.67,.62],[.50,.74],[.35,.62]]}
+    {name:"a cat",    emoji:"🐱", pts:[[.33,.34],[.37,.16],[.47,.29],[.57,.29],[.67,.16],[.71,.34],[.67,.62],[.50,.74],[.35,.62]]},
+    {name:"a boat",   emoji:"⛵", pts:[[.50,.12],[.74,.54],[.88,.62],[.74,.82],[.26,.82],[.12,.62],[.26,.54]]},
+    {name:"a tree",   emoji:"🌲", pts:[[.50,.12],[.70,.44],[.60,.44],[.76,.72],[.56,.72],[.56,.86],[.44,.86],[.44,.72],[.24,.72],[.40,.44],[.30,.44]]},
+    {name:"a heart",  emoji:"❤️", pts:[[.50,.28],[.62,.16],[.78,.20],[.84,.36],[.72,.56],[.50,.78],[.28,.56],[.16,.36],[.22,.20],[.38,.16]]},
+    {name:"a crown",  emoji:"👑", pts:[[.18,.72],[.16,.28],[.32,.46],[.50,.22],[.68,.46],[.84,.28],[.82,.72]]},
+    {name:"an ice cream", emoji:"🍦", pts:[[.50,.88],[.34,.52],[.28,.40],[.34,.26],[.50,.20],[.66,.26],[.72,.40],[.66,.52]]},
+    {name:"a mushroom", emoji:"🍄", pts:[[.50,.16],[.74,.30],[.80,.48],[.62,.48],[.62,.84],[.38,.84],[.38,.48],[.20,.48],[.26,.30]]},
+    {name:"a tulip",  emoji:"🌷", pts:[[.50,.18],[.63,.28],[.72,.22],[.70,.48],[.50,.60],[.30,.48],[.28,.22],[.37,.28]]},
+    {name:"the moon", emoji:"🌙", pts:[[.54,.10],[.34,.20],[.24,.42],[.29,.64],[.46,.82],[.62,.88],[.48,.66],[.43,.45],[.47,.26]]},
+    {name:"a lightning bolt", emoji:"⚡", pts:[[.58,.10],[.46,.44],[.63,.44],[.40,.88],[.47,.54],[.31,.54]]},
+    {name:"a car",    emoji:"🚗", pts:[[.14,.70],[.20,.50],[.36,.50],[.44,.32],[.66,.32],[.74,.50],[.86,.50],[.86,.70]]},
+    {name:"a hat",    emoji:"🎩", pts:[[.22,.72],[.30,.70],[.30,.26],[.70,.26],[.70,.70],[.78,.72],[.78,.84],[.22,.84]]}
   ];
+  var starSeen = [];
   var shape = null, starIdx = 0, starEnts = [], shapeSpan = 0, shapeOffX = 0, shapeOffY = 0;
   function startStars(){
     clearEnts(); clearPieces();
     drawLayer.innerHTML = "";
     var r = rect();
     hero.classList.remove("on");
-    shape = SHAPES[score % SHAPES.length];
+    if(score === 0) starSeen = [];
+    var pool = SHAPES.filter(function(sh){ return starSeen.indexOf(sh.name) === -1; });
+    if(!pool.length){ starSeen = []; pool = SHAPES.slice(); }
+    shape = pool[Math.floor(Math.random()*pool.length)];
+    starSeen.push(shape.name);
     starIdx = 0; starEnts = [];
     var sz = Math.min(r.width, r.height)*0.075;
     var span = Math.min(r.width, r.height)*0.82;
@@ -2745,7 +2809,7 @@
     kataShowing = true;
     badge.classList.add("on");
     badge.textContent = "👀 read the move: " + disp(kataWord);
-    setTimeout(hideKata, 1600 + n*600);
+    setTimeout(hideKata, 2600 + n*600);
     stopLoop();
   }
   function hideKata(){
@@ -2767,7 +2831,7 @@
         if(ents[j].alive && ents[j].kind === "kata") entContent(ents[j], kataTile(ents[j].letter, false));
       kataIdx = 0;
       badge.textContent = "👀 read the move: " + disp(kataWord);
-      setTimeout(hideKata, 1400 + kataSeq.length*600);
+      setTimeout(hideKata, 2400 + kataSeq.length*600);
       return;
     }
     var list = [];
@@ -2956,13 +3020,27 @@
     + '<circle cx="15" cy="18" r="6" fill="#5d4426" opacity=".85"/>'
     + '<circle cx="30" cy="12" r="6.5" fill="#5d4426" opacity=".85"/>'
     + '<circle cx="45" cy="18" r="6" fill="#5d4426" opacity=".85"/></svg>';
-  var trailSeq = [], trailIdx = 0, trailEnts = [], trailDino = null;
+  var TRAIL_3 = ["DIG","EGG","BIG","MUD","JAW","LEG","TOE","RUN","SUN","FIN","HOP","OLD",
+                 "PAW","NUT","FOG","ICE","SEA","SKY","WEB","BUG","LOG","PIT","ASH","RIB"];
+  var TRAIL_4 = ["ROAR","TAIL","BONE","CLAW","NEST","HORN","LAND","SWIM","WALK","FERN",
+                 "LAVA","ROCK","TREE","WING","EGGS","MEAT","TUSK","SKIN","JAWS","FEET",
+                 "HERD","HUNT","LEAF","MOSS","SAND","CAVE","DUST","FOOT","LAKE","HILL",
+                 "SOIL","PATH"];
+  var TRAIL_5 = ["STOMP","SCALE","TEETH","SPIKE","PLANT","SWAMP","RIVER","CLAWS","TRACK","BEAST",
+                 "GIANT","BONES","ROCKS","TREES","MARSH","SHELL","CRUSH","STAMP","EARTH","FERNS"];
+  var trailSeq = [], trailIdx = 0, trailEnts = [], trailWord = "", trailSeen = [];
   function startTrail(){
     clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
     var r = rect();
     hero.classList.remove("on");
-    var n = 4 + Math.floor(score/2);
-    trailSeq = pickLetters(n);
+    if(score === 0) trailSeen = [];
+    var bank = score < 2 ? TRAIL_3 : (score < 4 ? TRAIL_4 : TRAIL_5);
+    var pool = bank.filter(function(w){ return trailSeen.indexOf(w) === -1; });
+    if(!pool.length) pool = bank.slice();
+    trailWord = pool[Math.floor(Math.random()*pool.length)];
+    trailSeen.push(trailWord);
+    trailSeq = trailWord.split("");
+    var n = trailSeq.length;
     trailIdx = 0; trailEnts = [];
     var slot = r.width/(n + 0.8);
     var sz = Math.min(slot*0.72, Math.min(r.width, r.height)*0.15);
@@ -2980,7 +3058,7 @@
     hx = slot*0.25; hy = trailEnts[0].y - r.height*0.1; drawHero(true);
     markTrail();
     badge.classList.add("on");
-    badge.textContent = "🐾 0 / " + n;
+    badge.textContent = "🐾 " + disp(trailWord);
     stopLoop();
   }
   function markTrail(){
@@ -3001,7 +3079,6 @@
     stepSound();
     var r = rect();
     trailIdx++;
-    badge.textContent = "🐾 " + trailIdx + " / " + trailSeq.length;
     var tx = e.x, ty = e.y - r.height*0.1, fx = hx, fy = hy, t0 = performance.now();
     (function frame(){
       var kk = Math.min((performance.now()-t0)/260, 1), ee = 1 - Math.pow(1-kk, 2);
@@ -3460,6 +3537,203 @@
     }, segs.length*80 + 550);
   }
 
+  /* ================= MATHS: penalty maths (football, mouse) ================= */
+  var pnNets = [], pnAnswer = 0, pnNetY = 0, pnSeen = [];
+  function startPenalty(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    aimLine.classList.remove("on");
+    pnNetY = r.height*0.26;
+    if(score === 0) pnSeen = [];
+    var hi = score < 2 ? 5 : 10;                       // sums to five, then to ten
+    var a, b, key, tries = 0;
+    do {
+      a = 1 + Math.floor(Math.random()*(hi-1));
+      b = 1 + Math.floor(Math.random()*(hi-a));
+      key = a + "+" + b;
+      tries++;
+    } while(tries < 60 && (pnSeen.indexOf(key) !== -1 || pnSeen.indexOf(b + "+" + a) !== -1));
+    pnSeen.push(key);
+    pnAnswer = a + b;
+    var opts = [pnAnswer];
+    while(opts.length < 3){
+      var o = Math.max(1, pnAnswer + Math.floor(Math.random()*5) - 2);
+      if(opts.indexOf(o) === -1) opts.push(o);
+    }
+    opts.sort(function(){ return Math.random()-0.5; });
+
+    pnNets = [];
+    var nw = r.width*0.24, nh = r.height*0.2;
+    for(var i=0;i<3;i++){
+      var cxp = r.width*(0.2 + i*0.3);
+      var el = sceneDiv("left:"+(cxp - nw/2)+"px;top:"+(pnNetY - nh/2)+"px;width:"+nw+"px;height:"+nh
+        + "px;border:7px solid var(--chalk);border-top:none;border-radius:0 0 14px 14px;"
+        + "box-sizing:border-box;display:flex;align-items:center;justify-content:center;"
+        + "font-weight:700;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4);"
+        + "font-size:"+Math.round(nh*0.55)+"px;transition:background .25s;"
+        + "background:repeating-linear-gradient(90deg,rgba(255,255,255,.34) 0 2px,transparent 2px 13px),"
+        + "repeating-linear-gradient(0deg,rgba(255,255,255,.34) 0 2px,transparent 2px 13px),"
+        + "rgba(10,40,25,.4);", String(opts[i]));
+      pnNets.push({x:cxp, w:nw, val:opts[i], el:el});
+    }
+    orderCard("Score in the net that makes",
+      '<span class="oname" style="font-size:clamp(1.8rem,6vmin,2.8rem)">' + a + " + " + b + '</span>');
+    size = Math.min(r.width, r.height)*0.13;
+    ball.classList.remove("gone");
+    place(r.width/2, r.height*0.82);
+    ball.classList.add("ring");
+    badge.classList.remove("on");
+    stopLoop();
+  }
+  function penaltyRelease(ev){
+    aiming = false;
+    try{ ball.releasePointerCapture(ev.pointerId); }catch(e){}
+    aimLine.classList.remove("on");
+    var r = rect();
+    var dx = (ev.clientX - r.left) - x, dy = (ev.clientY - r.top) - y;
+    if(Math.sqrt(dx*dx + dy*dy) < 20){ ball.classList.add("ring"); return; }
+    var pick = null;
+    if(dy < -6){
+      var ix = x + dx*((pnNetY - y)/dy);
+      for(var i=0;i<pnNets.length;i++)
+        if(Math.abs(ix - pnNets[i].x) < pnNets[i].w*0.62) pick = pnNets[i];
+    }
+    tone(320, 0, .13, "sawtooth", .07);
+    ball.classList.remove("ring");
+    if(!pick){
+      var far = 1.6*Math.max(r.width, r.height)/Math.sqrt(dx*dx + dy*dy);
+      penaltyFly(x + dx*far, y + dy*far, false, null);
+      return;
+    }
+    penaltyFly(pick.x, pnNetY, pick.val === pnAnswer, pick);
+  }
+  function penaltyFly(tx, ty, ok, net){
+    busy = true;
+    var x0 = x, y0 = y, t0 = performance.now(), spin = (tx > x0 ? 1 : -1)*620;
+    var dist = Math.sqrt((tx-x0)*(tx-x0) + (ty-y0)*(ty-y0));
+    (function frame(){
+      var k = Math.min((performance.now()-t0)/460, 1), e = 1 - Math.pow(1-k, 2.2);
+      var px = x0 + (tx-x0)*e, py = y0 + (ty-y0)*e - Math.sin(e*Math.PI)*Math.min(60, dist*0.18);
+      x = px; y = py;
+      ball.style.transform = "translate("+(px-size/2)+"px,"+(py-size/2)+"px) rotate("+(spin*e)
+        + "deg) scale("+(1-0.38*e)+")";
+      if(k < 1) requestAnimationFrame(frame);
+      else {
+        busy = false;
+        if(ok){ if(net) net.el.style.background = "rgba(80,220,120,.55)"; celebrate("GOAL!"); }
+        else {
+          thudSound();
+          if(net){ net.el.style.background = "rgba(232,68,58,.5)"; toast("That net is " + net.val + " — try again!"); }
+          else toast("Missed the goal — aim at a net!");
+          setTimeout(function(){ if(mode === "maths") retryPenalty(); }, 900);
+        }
+      }
+    })();
+  }
+  function retryPenalty(){
+    var r = rect();
+    for(var i=0;i<pnNets.length;i++)
+      pnNets[i].el.style.background = "repeating-linear-gradient(90deg,rgba(255,255,255,.34) 0 2px,transparent 2px 13px),"
+        + "repeating-linear-gradient(0deg,rgba(255,255,255,.34) 0 2px,transparent 2px 13px),rgba(10,40,25,.4)";
+    place(r.width/2, r.height*0.82);
+    ball.style.transform = "translate("+(x-size/2)+"px,"+(y-size/2)+"px)";
+    ball.classList.add("ring");
+  }
+
+  /* ================= MATHS: count the shoal (sea, mouse) ================= */
+  var shoalWant = 0, shoalSeen = [];
+  function startShoal(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    hero.classList.remove("on");
+    if(score === 0) shoalSeen = [];
+    var lo = score < 2 ? 2 : 4, hi = score < 2 ? 7 : 11;
+    var counts = [], guard = 0;
+    while(counts.length < 3 && guard++ < 200){
+      var n = lo + Math.floor(Math.random()*(hi-lo));
+      if(counts.indexOf(n) === -1) counts.push(n);
+    }
+    var fresh = counts.filter(function(c){ return shoalSeen.indexOf(c) === -1; });
+    var from = fresh.length ? fresh : counts;
+    shoalWant = from[Math.floor(Math.random()*from.length)];
+    shoalSeen.push(shoalWant);
+    var fish = ["🐠","🐟","🐡"][score % 3];
+    for(var i=0;i<3;i++){
+      var inner = '<span class="shoal">';
+      for(var k=0;k<counts[i];k++) inner += fish;
+      inner += '</span>';
+      var e = addEnt(inner, r.width*(0.2 + i*0.3), r.height*(0.42 + (i%2)*0.12), m*0.3, "shoal");
+      e.count = counts[i];
+    }
+    orderCard("Click the shoal with",
+      '<span class="oname" style="font-size:clamp(2rem,7vmin,3.2rem)">' + shoalWant + '</span>');
+    badge.classList.remove("on");
+    stopLoop();
+  }
+  function shoalDown(pt){
+    var e = entAt(pt, "shoal");
+    if(!e) return;
+    if(e.count === shoalWant){
+      e.el.classList.remove("munch"); void e.el.offsetWidth; e.el.classList.add("munch");
+      celebrate("THAT'S " + shoalWant + "!");
+    } else {
+      softSound();
+      toast("That one has " + e.count + " — count again!");
+      e.el.classList.remove("nudge"); void e.el.offsetWidth; e.el.classList.add("nudge");
+    }
+  }
+
+  /* ================= MATHS: egg boxes (farm, number keys) ================= */
+  var eggNeed = 0, eggTotal = 0, eggIn = 0;
+  function startEggs(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect();
+    hero.classList.remove("on");
+    eggTotal = score < 3 ? 10 : 20;
+    eggNeed = 1 + Math.floor(Math.random()*9);
+    eggIn = eggTotal - eggNeed;
+
+    var cols = 10, rows = eggTotal/10;
+    var bw = Math.min(r.width*0.78, r.height*1.3);
+    var cell = bw/cols;
+    var bx = (r.width - bw)/2, by = r.height*0.42 - (cell*rows)/2;
+    sceneDiv("left:"+(bx-14)+"px;top:"+(by-14)+"px;width:"+(bw+28)+"px;height:"+(cell*rows+28)
+      + "px;border-radius:14px;background:#d8c9a8;border:6px solid #b39b74;box-sizing:border-box;", "");
+    for(var i=0;i<eggTotal;i++){
+      var c = i % cols, rw = Math.floor(i/cols);
+      sceneDiv("left:"+(bx + c*cell + cell*0.1)+"px;top:"+(by + rw*cell + cell*0.1)+"px;width:"
+        + (cell*0.8)+"px;height:"+(cell*0.8)+"px;border-radius:50%;"
+        + "background:" + (i < eggIn ? "transparent" : "rgba(0,0,0,.14)") + ";"
+        + "display:flex;align-items:center;justify-content:center;font-size:"+Math.round(cell*0.62)+"px;",
+        i < eggIn ? "🥚" : "");
+    }
+    orderCard("Eggs in the box: " + eggIn + " of " + eggTotal,
+      '<span class="oname" style="font-size:clamp(1.2rem,4vmin,1.7rem)">How many more?</span>');
+    badge.classList.add("on");
+    badge.textContent = "⌨️ type the number";
+    showTouchKeys(["1","2","3","4","5","6","7","8","9"].sort(function(){ return Math.random()-0.5; }).slice(0,4)
+                  .concat([String(eggNeed)]));
+    stopLoop();
+  }
+  function typeEggs(k){
+    if(!/^[0-9]$/.test(k)) return;
+    if(parseInt(k, 10) !== eggNeed){
+      softSound();
+      toast("Not quite — count the empty spaces.");
+      return;
+    }
+    chimeSound();
+    var slots = sceneLayer.children, filled = 0;
+    for(var i=1;i<slots.length;i++){
+      if(slots[i].textContent) continue;
+      (function(el, d){
+        setTimeout(function(){ el.textContent = "🥚"; el.style.background = "transparent"; stepSound(); }, d*130);
+      })(slots[i], filled++);
+    }
+    setTimeout(function(){ if(mode === "maths") celebrate("BOX FULL!"); }, filled*130 + 350);
+  }
+
   /* ================= round router ================= */
   var STARTERS = {maze:startMaze, dive:startDive, cross:startCross,
                   drive:startDrive, dodge:startDodge, catch:startCatch,
@@ -3468,36 +3742,37 @@
                   meteor:startMeteor, soup:startSoup,
                   board:startBoard, kata:startKata, pads:startPads,
                   dig:startDig, trail:startTrail, leap:startLeap,
-                  ants:startAnts, bugs:startBugs, crawl:startCrawl};
+                  ants:startAnts, bugs:startBugs, crawl:startCrawl,
+                  penalty:startPenalty, shoal:startShoal, eggs:startEggs};
   var UPDATERS = {maze:updateMaze, dive:updateDive, cross:updateCross, drive:updateDrive,
                   dodge:updateDodge, catch:updateCatch,
                   snap:updateSnap, mud:updateMud, track:updateTrack,
                   letters:updateLetters, meteor:updateMeteor,
                   board:updateBoard, pads:updatePads, dig:updateDig, crawl:updateCrawl};
   var TYPERS = {sonar:typeSonar, feed:typeFeed, toll:typeToll, meteor:typeMeteor, soup:typeSoup,
-                kata:typeKata, trail:typeTrail, bugs:typeBugs};
+                kata:typeKata, trail:typeTrail, bugs:typeBugs, eggs:typeEggs};
   function typeKey(k){
-    if(mode !== "letters" || busy || !running) return;
+    if((mode !== "letters" && mode !== "maths") || busy || !running) return;
     if(gameKey === "letters") pressLetter(k);
     else if(TYPERS[gameKey]) TYPERS[gameKey](k);
   }
   var STEPPERS = {cross:crossStep, pads:padStep, leap:leapStep, crawl:crawlStep};
   var MOUSE_DOWN = {snap:snapDown, mud:mudDown, track:trackDown, stars:starsDown, pizza:pizzaDown,
-                    board:boardDown, dig:digDown, ants:antsDown};
+                    board:boardDown, dig:digDown, ants:antsDown, shoal:shoalDown};
   var MOUSE_MOVE = {track:trackMove, pizza:pizzaMove, dig:digMove, ants:antsMove};
   var MOUSE_UP   = {track:trackUp,  pizza:pizzaUp, board:boardUp, dig:digUp, ants:antsUp};
 
   function fieldPos(ev){ var r = rect(); return {x:ev.clientX - r.left, y:ev.clientY - r.top}; }
   field.addEventListener("pointerdown", function(ev){
-    if(mode !== "mouse" || busy || !running) return;
+    if((mode !== "mouse" && mode !== "maths") || busy || !running) return;
     if(MOUSE_DOWN[gameKey]){ ev.preventDefault(); MOUSE_DOWN[gameKey](fieldPos(ev), ev); }
   });
   field.addEventListener("pointermove", function(ev){
-    if(mode !== "mouse" || !running) return;
+    if((mode !== "mouse" && mode !== "maths") || !running) return;
     if(MOUSE_MOVE[gameKey]) MOUSE_MOVE[gameKey](fieldPos(ev), ev);
   });
   window.addEventListener("pointerup", function(ev){
-    if(mode !== "mouse" || !running) return;
+    if((mode !== "mouse" && mode !== "maths") || !running) return;
     if(MOUSE_UP[gameKey]) MOUSE_UP[gameKey](fieldPos(ev), ev);
   });
 
@@ -3526,11 +3801,10 @@
     {goalW:46, kSpeed:0,  def:null,              chaseSecs:0, msg:""},
     {goalW:46, kSpeed:46, def:null,              chaseSecs:0, msg:"The keeper is in!"},
     {goalW:38, kSpeed:60, def:null,              chaseSecs:0, msg:"Smaller net!"},
-    {goalW:38, kSpeed:60, def:{y:.38, speed:0},  chaseSecs:0, msg:"A defender!"},
-    {goalW:34, kSpeed:70, def:{y:.38, speed:58}, chaseSecs:0, msg:"He's moving now!"},
+    {goalW:36, kSpeed:64, def:{y:.38, speed:0},  chaseSecs:0, msg:"A defender!"},
     {goalW:32, kSpeed:82, def:{y:.38, speed:58}, chaseSecs:4, msg:"Everyone is back — shoot fast!"}
   ];
-  function shootLevelFor(n){ return n < 15 ? Math.floor(n/3) : 5; }
+  function shootLevelFor(n){ return Math.min(Math.floor(n/2), 4); }   // two goals per level
   var shootLevel = -1, keeperSpeed = 0, keeperX = 0, keeperDir = 1;
   var defSpeed = 0, defX = 0, defY = 0, defDir = 1, chaserSpeed = 0, chX = 0, chY = 0, aiming = false;
 
@@ -3701,7 +3975,8 @@
   ball.addEventListener("pointerenter", function(){ if(mode === "shoot") ball.classList.add("hover"); });
   ball.addEventListener("pointerleave", function(){ ball.classList.remove("hover"); });
   ball.addEventListener("pointerdown", function(ev){
-    if(busy || mode !== "shoot" || !running) return;
+    if(busy || !running) return;
+    if(mode !== "shoot" && gameKey !== "penalty") return;
     ev.preventDefault();
     aiming = true;
     ball.classList.remove("ring");
@@ -3709,15 +3984,18 @@
     pickSound(); drawAim(ev);
   });
   ball.addEventListener("pointermove", function(ev){ if(aiming) drawAim(ev); });
-  function endPointer(ev){ if(aiming) releaseShot(ev); }
+  function endPointer(ev){
+    if(!aiming) return;
+    if(gameKey === "penalty") penaltyRelease(ev); else releaseShot(ev);
+  }
   ball.addEventListener("pointerup", endPointer);
   ball.addEventListener("pointercancel", endPointer);
 
   /* ================= FOOTBALL: chase (letters) ================= */
   var ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  var RUN_SECS = [11, 9.5, 8, 7, 6];
-  var curLetter = "A", runY = 0, stopY = 0, runSpeed = 0, lineY = 0, lettersLive = false;
-  var runBallSpin = 0, runX = 0, stopX = 0, chaseEscapes = 0;
+  var CHASE_STEPS = [2, 3, 4, 5, 6];        // letters needed to catch him, one round each
+  var curLetter = "A", runY = 0, stopY = 0, lineY = 0, lettersLive = false;
+  var runBallSpin = 0, runX = 0, stopX = 0, chaseNeed = 0, chaseDone = 0, chaseGap = 0, chaseCreep = 0;
   function placeRunBall(){
     runball.style.transform = "translate("+(runX + 26 - runball.offsetWidth/2)+"px,"
       + (runY + 30 - runball.offsetHeight/2)+"px) rotate("+runBallSpin+"deg)";
@@ -3745,42 +4023,42 @@
   }
   function setupLetters(){
     var r = rect();
-    lineY = r.height*0.18; runY = r.height*0.90;
-    stopY = r.height*(0.99 - Math.min(chaseEscapes, 4)*0.035);     // a little head start after each escape
+    lineY = r.height*0.18;
+    runY = r.height*0.82;
+    stopY = r.height*0.99;
     runX = r.width*0.38; stopX = r.width*0.62;
-    runSpeed = (runY - lineY)/RUN_SECS[Math.min(score, RUN_SECS.length-1)]*spd()
-             * Math.pow(0.86, Math.min(chaseEscapes, 5));            // and he gets slower
+    chaseNeed = CHASE_STEPS[Math.min(score, CHASE_STEPS.length-1)];
+    chaseDone = 0;
+    chaseGap = (stopY - runY)/chaseNeed;          // close the gap in exactly that many letters
+    chaseCreep = (runY - lineY)/(chaseNeed + 3);  // he edges forward, but never reaches the line
     runBallSpin = 0;
     runner.classList.add("on"); stopper.classList.add("on");
     placeAt(runner, runX, runY); placeAt(stopper, stopX, stopY); placeRunBall();
     lettersLive = true;
+    badge.classList.add("on");
+    badge.textContent = "🏃 0 / " + chaseNeed;
     newLetter();
-    startLoop();
+    stopLoop();                                    // no clock — he is always catchable
   }
-  function updateLetters(dt){
-    if(!lettersLive) return;
-    var r = rect();
-    runY -= runSpeed*dt;
-    runBallSpin -= runSpeed*dt*2.2;
-    placeAt(runner, runX, runY);
-    placeRunBall();
-    if(runY <= lineY){
-      lettersLive = false; busy = true;
-      chaseEscapes++;
-      softSound(); toast(chaseEscapes > 1 ? "He got away — but he's getting tired!" : "He got away! Try again.");
-      setTimeout(function(){ busy = false; if(mode === "letters") nextRound(); }, 1300);
-    }
-  }
+  function updateLetters(){}
   function pressLetter(L){
     if(mode !== "letters" || !lettersLive || busy) return;
     var r = rect();
     if(L === curLetter){
       stepSound();
-      stopY -= r.height*0.115;
+      chaseDone++;
+      badge.textContent = "🏃 " + chaseDone + " / " + chaseNeed;
+      stopY -= chaseGap;
+      if(chaseDone < chaseNeed){                   // he scampers on a bit, but stays in reach
+        runY -= chaseCreep;
+        runBallSpin -= 90;
+        placeAt(runner, runX, runY);
+        placeRunBall();
+      }
       placeAt(stopper, stopX, stopY);
       stopper.classList.remove("lunge"); void stopper.offsetWidth; stopper.classList.add("lunge");
       lcard.classList.remove("good"); void lcard.offsetWidth; lcard.classList.add("good");
-      if(stopY <= runY){ lettersLive = false; chaseEscapes = 0; celebrate("CAUGHT!"); }
+      if(chaseDone >= chaseNeed){ lettersLive = false; celebrate("CAUGHT!"); }
       else newLetter();
     } else {
       lcard.classList.remove("bad"); void lcard.offsetWidth; lcard.classList.add("bad");
@@ -3804,7 +4082,7 @@
       ev.preventDefault();
       if(STEPPERS[gameKey]) STEPPERS[gameKey](dir);
       else held[dir] = true;
-    } else if(mode === "letters"){
+    } else if(mode === "letters" || mode === "maths"){
       if(ev.key.length === 1 && /[a-z0-9]/i.test(ev.key)) typeKey(ev.key.toUpperCase());
     }
   });
@@ -3828,12 +4106,12 @@
   /* ================= navigation ================= */
   var RULES = {
     shoot:  ["⚽","Shoot","Hold the mouse button on the ball. Pull it towards the net. Let go to shoot!"],
-    letters:["🔤","Chase","A letter pops up on the card. Press that letter on the keyboard to run faster. Catch him before he reaches the line!"],
+    letters:["🔤","Chase","A letter pops up on the card. Press that letter to take a step closer. Keep going and you will always catch him — it just takes more letters each time."],
     maze:   ["🚧","Cone Drills","Hold the arrow keys to roll the ball. Find your way through the cones to the net."],
     dive:   ["🤿","Treasure Dive","Use the arrow keys to swim. Find all three treasure chests. Don't bump the jellyfish!"],
     cross:  ["🚜","Cross the Yard","Press the arrow keys to hop. Wait for a gap, then hop all the way up to the barn."],
     drive:  ["🛣️","Road Trip","Use the arrow keys to steer your car. Go around the cones, cars and oil. Drive to the flag!"],
-    dodge:  ["☄️","Asteroid Run","Use the arrow keys to fly your rocket. Dodge the space rocks. Land on the planet!"],
+    dodge:  ["☄️","Asteroid Run","Use the arrow keys to fly your rocket up to the planet. Steer around the falling space rocks — one is coming straight down the middle!"],
     catch:  ["🥣","Catch the Food","The card shows one food. Move the plate with the arrow keys to catch that food. Let the others fall."],
     snap:   ["📷","Deep Sea Snap","Your mouse is a camera! The dark pictures on the left show what to find. Click each one as it swims past."],
     mud:    ["🧽","Muddy Piglets","Your mouse is a sponge! Click every muddy spot to wash the piglets clean."],
@@ -3844,11 +4122,14 @@
     feed:   ["🥕","Feed the Animals","The animals are hungry. Each one has a letter. Type it to throw them a snack."],
     toll:   ["🎫","Toll Booth Typer","Cars are waiting. Type the letter or number on the front car's plate to lift the barrier."],
     meteor: ["🛡️","Meteor Defence","Meteors are falling! Each one has a letter. Type it to zap the meteor before it lands."],
+    penalty:["🔢","Penalty Maths","Add the two numbers on the card together. Then pull the ball back with the mouse and shoot it into the net showing the answer!"],
+    shoal:  ["🔢","Count the Shoal","Count the fish in each group. Click the group that has the number on the card."],
+    eggs:   ["🔢","Egg Boxes","The box needs filling. Count the empty spaces and type that number on the keyboard."],
     ants:   ["🐜","Ant Trail","The ants want to reach the picnic. Hold the mouse button and draw them a path from their nest, then let go and watch them march."],
     bugs:   ["🔤","Bug Sounds","A bug appears with its name underneath, but the first letter is missing. Type the letter that belongs in the gap."],
     crawl:  ["🐛","Caterpillar Crawl","Steer the hungry caterpillar with the arrow keys and eat all the food. You grow longer with every bite, so do not bump into your own tail!"],
     dig:    ["🦴","Fossil Dig","There is a dinosaur buried in the dirt! Hold the mouse button down and sweep it around to brush the dirt away."],
-    trail:  ["🐾","Footprint Trail","Follow the footprints from left to right. Type the letter on each one to walk the dinosaur along."],
+    trail:  ["🐾","Footprint Trail","The footprints spell a word. Type each letter from left to right to walk the dinosaur along the trail."],
     leap:   ["🌋","Lava Leap","Find the stepping stones that lead all the way across. Hop from stone to stone with the arrow keys."],
     board:  ["💥","Board Breaker","Hold the mouse button down to build up power. Let go when the bar is on the green part to smash the board!"],
     kata:   ["🧠","Kata Caller","Read the move word on the cards. When they flip over, type the word back from memory."],
@@ -3885,7 +4166,10 @@
   });
 
   function gameKeysFor(t){
-    return t.id === "football" ? ["shoot","letters","maze"] : [t.mouse.key, t.letters.key, t.arrows.key];
+    var keys = t.id === "football" ? ["shoot","letters","maze"]
+                                   : [t.mouse.key, t.letters.key, t.arrows.key];
+    if(t.maths) keys.push(t.maths.key);
+    return keys;
   }
   function wonKey(t, key, speed){ return bestKey(t.id, key) + ":" + (speed || save.speed); }
   function isWon(t, key, speed){ return !!save.won[wonKey(t, key, speed)]; }
@@ -3958,7 +4242,7 @@
     var isFootball = t.id === "football";
     if(isFootball){
       themeModes.appendChild(modeCard("🖱️", "Shoot", "Mouse",
-        isWon(t,"shoot"), true, function(){ startGame("shoot","shoot",20); }));
+        isWon(t,"shoot"), true, function(){ startGame("shoot","shoot",10); }));
     } else {
       var mg = t.mouse;
       themeModes.appendChild(modeCard(mg.emoji, mg.name, "Mouse",
@@ -3975,6 +4259,11 @@
     var a = t.arrows;
     themeModes.appendChild(modeCard(a.emoji, a.name, "Arrow keys",
       isWon(t,a.key), true, function(){ startGame("arrows", a.key, a.target); }));
+    if(t.maths){
+      var mathsG = t.maths;
+      themeModes.appendChild(modeCard(mathsG.emoji, mathsG.name, "Numbers",
+        isWon(t,mathsG.key), true, function(){ startGame("maths", mathsG.key, mathsG.target); }));
+    }
     // printable worksheets for this theme, if any have been added to the repo
     themeSheets.innerHTML = "";
     var sheets = PRINTABLES[t.id] || [];
@@ -4013,15 +4302,15 @@
     paintBackdrop();
     shootLevel = -1; keeperX = 0; keeperDir = 1; defX = 0; defDir = 1;
     lettersLive = false; aiming = false; busy = false; mazeMoving = false; hopping = false;
-    chaseEscapes = 0;
     setScore(0);
     themeSheet.hidden = true; winSheet.hidden = true;
     backBtn.hidden = false;
     hint.textContent = (m === "arrows") ? theme.arrows.hint
+      : (m === "maths") ? theme.maths.hint
       : (m === "mouse") ? theme.mouse.hint
       : (m === "letters" && theme.letters) ? theme.letters.hint
-      : (m === "shoot" ? "Pull the ball towards the net with the mouse and let go. 20 goals wins."
-                       : "Press the letter on the card to move your player. 5 catches wins.");
+      : (m === "shoot" ? "Pull the ball towards the net with the mouse and let go. 10 goals wins."
+                       : "Press the letter on the card to close in on him. 5 catches wins.");
     clearEnts(); clearPieces();
     sceneLayer.innerHTML = ""; trackLayer.innerHTML = ""; drawLayer.innerHTML = "";
     orderEl.innerHTML = ""; checklist.innerHTML = "";
@@ -4053,7 +4342,7 @@
     runner.classList.remove("on"); stopper.classList.remove("on");
     hero.classList.remove("on"); badge.classList.remove("on");
     foodCard.classList.remove("on","got"); roadlines.classList.remove("on");
-    hero.classList.remove("frozen"); catchFreeze = 0; driveFreeze = 0;
+    hero.classList.remove("frozen"); catchFreeze = 0; driveFreeze = 0; dodgeFreeze = 0;
     heroRot = 0;
     goal.style.width = "46%"; maze.innerHTML = "";
     shootLevel = -1;
