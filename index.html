@@ -4606,11 +4606,8 @@
   // Custom events need a paid plan, but page views are counted per URL path on every
   // plan — so give each screen its own path and they show up in the Pages panel.
   function pageAs(path){
-    try{
-      if(location.pathname === path) return;
-      history.pushState({}, "", path);
-      if(window.va) window.va("pageview", {route:path, path:path});
-    }catch(e){}
+    // report the screen to analytics without touching history, so back stays inert
+    try{ if(window.va) window.va("pageview", {route:path, path:path}); }catch(e){}
   }
   function showRules(key){
     var rl = RULES[key] || ["🎮","Ready?","Have fun!"];
@@ -4841,24 +4838,13 @@
 
   /* ---------- keep stray mouse clicks from leaving the game ----------
      The side buttons on a mouse fire as button 3 and 4. Blocking those helps, but it
-     is not reliable in every browser, so the history is also kept topped up: any back
-     or forward navigation is caught, cancelled, and turned into the app's own Back. */
-  function appBack(){
-    if(mode){                                   // in a game → back to the theme screen
-      var t = theme;
-      resetField();
-      if(t) openTheme(t); else toHome();
-    } else if(!winSheet.hidden || !themeSheet.hidden){
-      toHome();                                 // on a theme or win screen → home
-    }
-    // already home: stay put
-  }
+     is not reliable in every browser, so the history is topped straight back up as well:
+     back and forward do nothing at all. Only the on-screen Back button moves you. */
   function guardHistory(){
     try{ history.pushState({cq:1}, "", location.pathname + location.search); }catch(e){}
   }
   window.addEventListener("popstate", function(){
-    guardHistory();                             // put the entry back so they never leave
-    appBack();
+    guardHistory();                             // put the entry straight back — nothing happens
   });
   ["mousedown","mouseup","auxclick"].forEach(function(evt){
     window.addEventListener(evt, function(ev){
