@@ -318,11 +318,15 @@
     transition:width .4s ease;}
 
   .g-soup .order{display:flex;}
-  .g-penalty .order,.g-shoal .order,.g-eggs .order{
+  .g-penalty .order,.g-shoal .order,.g-eggs .order,
+  .g-queue .order,.g-seq .order,.g-double .order,
+  .g-boards .order,.g-share .order,.g-compare .order{
     display:flex;flex-direction:row;align-items:center;gap:14px;
     left:50%;right:auto;top:auto;bottom:16px;transform:translateX(-50%);
     padding:10px 26px;white-space:nowrap;}
-  .g-penalty .order .otitle,.g-shoal .order .otitle,.g-eggs .order .otitle{font-size:1.05rem;}
+  .g-penalty .order .otitle,.g-shoal .order .otitle,.g-eggs .order .otitle,
+  .g-queue .order .otitle,.g-seq .order .otitle,.g-double .order .otitle,
+  .g-boards .order .otitle,.g-share .order .otitle,.g-compare .order .otitle{font-size:1.05rem;}
   .shoal{display:flex;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;
     width:100%;height:100%;gap:4%;font-size:.26em;line-height:1;box-sizing:border-box;padding:9%;
     border:6px solid rgba(255,255,255,.9);border-radius:50%;
@@ -388,13 +392,17 @@
     font-weight:600;font-size:.95rem;padding:7px 14px;border-radius:999px;cursor:pointer;line-height:1;}
   .seg button.active{background:var(--sun);color:#3a2a00;}
   .seg button:focus-visible{outline:3px solid var(--chalk);outline-offset:2px;}
+  .credit{position:absolute;right:16px;bottom:12px;color:rgba(255,255,255,.55);
+    font-size:.82rem;letter-spacing:.04em;pointer-events:none;}
+  .credit b{color:rgba(255,255,255,.88);font-weight:600;letter-spacing:.06em;}
   .quest-done{flex:none;display:none;background:var(--sun);color:#3a2a00;font-weight:700;
     padding:6px 18px;border-radius:999px;font-size:1.05rem;}
   .quest-done.on{display:block;animation:questin .6s ease;}
   @keyframes questin{0%{opacity:0;transform:scale(.7);}60%{transform:scale(1.08);}100%{opacity:1;transform:scale(1);}}
 
-  .modes{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;max-width:640px;}
-  .mode{flex:1 1 170px;max-width:210px;border:none;border-radius:20px;background:var(--card);color:var(--ink);
+  .modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+    width:100%;max-width:460px;justify-content:center;}
+  .mode{border:none;border-radius:20px;background:var(--card);color:var(--ink);
     font-family:var(--font);padding:16px 12px 14px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.28);
     display:flex;flex-direction:column;align-items:center;gap:5px;transition:transform .1s ease;}
   .mode:hover:not(:disabled){transform:translateY(-4px);}
@@ -505,6 +513,7 @@
         </div>
         <button class="clear-btn" id="clearBtn">Clear stars</button>
       </div>
+      <div class="credit">a game by <b>16BitHill</b></div>
     </div>
 
     <div class="sheet" id="themeSheet" hidden>
@@ -634,6 +643,8 @@
     {id:"road", name:"On the Move", emoji:"🚗", bg:"road",
      letters:{key:"toll", name:"Toll Booth Typer", emoji:"🎫", target:5,
               hint:"Type the letter or number on the number plate to lift the barrier."},
+     maths:{key:"queue", name:"Car Queue", emoji:"🔢", target:5,
+            hint:"Click the cars in order, smallest number first, to line them up at the toll."},
      mouse:{key:"track", name:"Track Fixer", emoji:"🚂", target:5,
             hint:"Drag the spare track into the gaps before the train reaches them. 5 journeys wins."},
      arrows:{key:"drive", name:"Road Trip",       emoji:"🛣️", target:5,
@@ -641,6 +652,8 @@
     {id:"space", name:"Up in Space", emoji:"🚀", bg:"space",
      letters:{key:"meteor", name:"Meteor Defence", emoji:"🛡️", target:5,
               hint:"Type the letter on a falling meteor to zap it before it reaches the shield."},
+     maths:{key:"seq", name:"Space Sequence", emoji:"🔢", target:5,
+            hint:"One number is missing from the row of planets. Work out the pattern and type it."},
      mouse:{key:"stars", name:"Constellation Creator", emoji:"⭐", target:5,
             hint:"Click the glowing star each time to join the dots and reveal the picture. 5 pictures wins."},
      arrows:{key:"dodge", name:"Asteroid Run",    emoji:"☄️", target:5,
@@ -648,6 +661,8 @@
     {id:"bugs", name:"In the Garden", emoji:"🐞", bg:"garden",
      letters:{key:"bugs", name:"Bug Sounds", emoji:"🔤", target:5,
               hint:"The bug's name is missing its first letter. Type the letter that belongs there."},
+     maths:{key:"double", name:"Ladybird Doubles", emoji:"🔢", target:5,
+            hint:"Both wings match. Count one wing, then click the flower with the total for both."},
      mouse:{key:"ants", name:"Ant Trail", emoji:"🐜", target:5,
             hint:"Hold the mouse button and draw a path from the nest to the picnic, then let go."},
      arrows:{key:"crawl", name:"Caterpillar Crawl", emoji:"🐛", target:6,
@@ -655,6 +670,8 @@
     {id:"dino", name:"Long Ago", emoji:"🦕", bg:"dino",
      letters:{key:"trail", name:"Footprint Trail", emoji:"🐾", target:5,
               hint:"The footprints spell a word. Type each letter in turn to walk the dinosaur along."},
+     maths:{key:"share", name:"Share the Leaves", emoji:"🔢", target:5,
+            hint:"Share the leaves fairly between the dinosaurs. Click the basket showing how many each."},
      mouse:{key:"dig", name:"Fossil Dig", emoji:"🦴", target:5,
             hint:"Hold the mouse button and sweep the brush over the dirt to uncover the skeleton."},
      arrows:{key:"leap", name:"Lava Leap", emoji:"🌋", target:5,
@@ -662,6 +679,8 @@
     {id:"dojo", name:"At the Dojo", emoji:"🥋", bg:"dojo",
      letters:{key:"kata", name:"Kata Caller", emoji:"🧠", target:5,
               hint:"Read the move word, then type it back when the cards flip over."},
+     maths:{key:"boards", name:"Board Count", emoji:"🔢", target:5,
+            hint:"Sensei breaks some of the boards. Type how many are left."},
      mouse:{key:"board", name:"Board Breaker", emoji:"💥", target:5,
             hint:"Hold the mouse button to build up power, then let go when the bar is on green."},
      arrows:{key:"pads", name:"Pad Kicks", emoji:"🦶", target:5,
@@ -669,6 +688,8 @@
     {id:"food", name:"What's Cooking", emoji:"🍳", bg:"food",
      letters:{key:"soup", name:"Soup Speller", emoji:"🍲", target:5,
               hint:"Spell the word on the card. Type each letter to drop that ingredient in the pot."},
+     maths:{key:"compare", name:"More or Fewer", emoji:"🔢", target:5,
+            hint:"Count both plates and click the one the card asks for."},
      mouse:{key:"pizza", name:"Pizza Topper", emoji:"🍕", target:5,
             hint:"Drag the toppings onto the pizza in the order on the card. 5 pizzas wins."},
      arrows:{key:"catch", name:"Catch the Food",  emoji:PLATE_SVG, target:5,
@@ -960,6 +981,8 @@
   }
 
   function celebrate(word){
+    if(!mode) return;                       // they have already left this game
+    var atMode = mode, atKey = gameKey;
     busy = true;
     themeSound(); confetti();
     cheer.textContent = word || "GOAL!";
@@ -968,6 +991,7 @@
     setScore(score+1);
     setTimeout(function(){
       busy = false;
+      if(mode !== atMode || gameKey !== atKey) return;   // gone elsewhere in the meantime
       if(score >= target) showWin();
       else nextRound();
     }, 950);
@@ -984,7 +1008,9 @@
     board:"Five boards smashed!", kata:"Five katas remembered!", pads:"Five rounds of kicks!",
     dig:"Five fossils uncovered!", trail:"Five trails followed!", leap:"Five lava crossings!",
     ants:"Five ant trails drawn!", bugs:"Five bugs named!", crawl:"A beautiful butterfly!",
-    penalty:"Five penalties scored!", shoal:"Five shoals counted!", eggs:"Five boxes filled!"
+    penalty:"Five penalties scored!", shoal:"Five shoals counted!", eggs:"Five boxes filled!",
+    queue:"Five queues sorted!", seq:"Five patterns solved!", double:"Five doubles found!",
+    boards:"Five stacks counted!", share:"Five fair shares!", compare:"Five plates compared!"
   };
   function showWin(){
     stopLoop();
@@ -1111,7 +1137,9 @@
     board:"Hold the mouse button down!", kata:"Type the moves in order!", pads:"Press the arrow for the bright pad!",
     dig:"Hold the button and sweep!", trail:"Type the letter on the next print!", leap:"Press an arrow to hop!",
     ants:"Draw a path from the nest!", bugs:"Type the first letter of the name!", crawl:"Steer with the arrow keys!",
-    penalty:"Shoot at the right net!", shoal:"Click a shoal of fish!", eggs:"Type how many more!"
+    penalty:"Shoot at the right net!", shoal:"Click a shoal of fish!", eggs:"Type how many more!",
+    queue:"Click the smallest number!", seq:"Type the missing number!", double:"Click the flower that is double!",
+    boards:"Type how many are left!", share:"Click a basket!", compare:"Click a plate!"
   };
   var lastInput = performance.now();
   function noteInput(){ lastInput = performance.now(); }
@@ -3556,11 +3584,12 @@
     } while(tries < 60 && (pnSeen.indexOf(key) !== -1 || pnSeen.indexOf(b + "+" + a) !== -1));
     pnSeen.push(key);
     pnAnswer = a + b;
-    var opts = [pnAnswer];
-    while(opts.length < 3){
+    var opts = [pnAnswer], guard = 0;
+    while(opts.length < 3 && guard++ < 200){
       var o = Math.max(1, pnAnswer + Math.floor(Math.random()*5) - 2);
       if(opts.indexOf(o) === -1) opts.push(o);
     }
+    for(var f=1; opts.length < 3; f++) if(opts.indexOf(pnAnswer+f) === -1) opts.push(pnAnswer+f);
     opts.sort(function(){ return Math.random()-0.5; });
 
     pnNets = [];
@@ -3734,6 +3763,429 @@
     setTimeout(function(){ if(mode === "maths") celebrate("BOX FULL!"); }, filled*130 + 350);
   }
 
+  /* ================= MATHS: car queue (on the move, mouse) ================= */
+  var QUEUE_CARS = ["🚗","🚙","🚕","🚐","🚚"];
+  var qNums = [], qIdx = 0, qLaneY = 0, qSeen = [];
+  function startQueue(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    hero.classList.remove("on");
+    qLaneY = r.height*0.78;
+    sceneDiv("left:0;top:"+(qLaneY - m*0.13)+"px;width:100%;height:"+(m*0.26)+"px;"
+      + "background:#4a4a52;border-top:5px solid #f2f2f2;border-bottom:5px solid #f2f2f2;", "");
+
+    if(score === 0) qSeen = [];
+    var howMany = 3 + Math.floor(score/2);           // three cars, rising to five
+    var tries = 0;
+    do {
+      qNums = [];
+      while(qNums.length < howMany){
+        var n = 1 + Math.floor(Math.random()*20);
+        if(qNums.indexOf(n) === -1) qNums.push(n);
+      }
+      qNums.sort(function(a,b){ return a-b; });
+      tries++;
+    } while(tries < 40 && qSeen.indexOf(qNums[0]) !== -1);   // a different smallest each round
+    qSeen.push(qNums[0]);
+    qIdx = 0;
+
+    var spots = qNums.slice().sort(function(){ return Math.random()-0.5; });
+    var slot = r.width/(howMany + 0.6);
+    for(var i=0;i<spots.length;i++){
+      var e = addEnt(tileHTML(QUEUE_CARS[i % QUEUE_CARS.length], spots[i]),
+                     slot*(i + 0.8), r.height*(0.26 + (i%2)*0.16), m*0.17, "qcar");
+      e.num = spots[i];
+      e.el.classList.add("flipart");
+      drawEnt(e);
+    }
+    orderCard("Click the cars", '<span class="oname">smallest first</span>');
+    badge.classList.add("on");
+    badge.textContent = "🚦 next: smallest";
+    stopLoop();
+  }
+  function queueDown(pt){
+    var e = entAt(pt, "qcar");
+    if(!e) return;
+    if(e.num !== qNums[qIdx]){
+      softSound();
+      toast(e.num + " is not next — look for a smaller one.");
+      e.el.classList.remove("nudge"); void e.el.offsetWidth; e.el.classList.add("nudge");
+      return;
+    }
+    chimeSound();
+    markTile(e);
+    e.kind = "parked";
+    var r = rect(), slot = r.width/(qNums.length + 1);
+    glide(e, slot*(qIdx + 0.7), qLaneY, 420);
+    qIdx++;
+    badge.textContent = qIdx >= qNums.length ? "🚦 all in order!" : "🚦 " + qIdx + " / " + qNums.length;
+    if(qIdx >= qNums.length) setTimeout(function(){ if(mode === "maths") celebrate("ALL IN ORDER!"); }, 480);
+  }
+
+  /* ================= MATHS: space sequence (up in space, number keys) ================= */
+  var seqVals = [], seqBlank = 0, seqAnswer = 0, seqSeen = [];
+  function startSeq(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    hero.classList.remove("on");
+    if(score === 0) seqSeen = [];
+    var step = 1, len = 5, span = step*(len-1), back, start, tries = 0;
+    do {
+      back = Math.random() < (score < 2 ? 0.3 : 0.5);   // some count on, some count back
+      start = back ? (1 + span + Math.floor(Math.random()*(9 - span)))
+                   : (1 + Math.floor(Math.random()*(9 - span)));
+      seqVals = [];
+      for(var i=0;i<len;i++) seqVals.push(back ? start - i*step : start + i*step);
+      seqBlank = 1 + Math.floor(Math.random()*(len-2));  // never the first or last
+      seqAnswer = seqVals[seqBlank];
+      tries++;
+    } while(tries < 60 && seqSeen.indexOf(seqAnswer) !== -1);
+    seqSeen.push(seqAnswer);
+
+    var planets = ["🪐","🌕","🌎","🌟","☄️"];
+    var slot = r.width/(len + 0.6);
+    for(var k=0;k<len;k++){
+      var e = addEnt(tileHTML(planets[k % planets.length],
+                     k === seqBlank ? "?" : seqVals[k]), slot*(k + 0.8), r.height*0.42, m*0.17, "planetnum");
+      if(k === seqBlank) e.el.querySelector(".lt-key").style.color = "#e8443a";
+    }
+    orderCard("Which number is missing?",
+      '<span class="oname">' + (back ? "counting back" : "counting on") + '</span>');
+    badge.classList.add("on");
+    badge.textContent = "⌨️ type the missing number";
+    showTouchKeys([String(seqAnswer), String(Math.max(1, seqAnswer-1)),
+                   String(Math.min(9, seqAnswer+1)), String(Math.max(1, seqAnswer-2))]);
+    stopLoop();
+  }
+  function typeSeq(k){
+    if(!/^[0-9]$/.test(k)) return;
+    if(parseInt(k, 10) !== seqAnswer){
+      softSound();
+      toast("Not that one — look at the pattern.");
+      return;
+    }
+    var tiles = [];
+    for(var i=0;i<ents.length;i++) if(ents[i].alive && ents[i].kind === "planetnum") tiles.push(ents[i]);
+    var e = tiles[seqBlank];
+    if(e){
+      entContent(e, tileHTML("🪐", seqAnswer));
+      markTile(e);
+      e.el.classList.add("munch");
+    }
+    chimeSound();
+    setTimeout(function(){ if(mode === "maths") celebrate("PATTERN SOLVED!"); }, 550);
+  }
+
+  /* ================= MATHS: ladybird doubles (in the garden, arrow keys) ================= */
+  var dblAnswer = 0, dblFlowers = [], dblHome = {x:0, y:0}, dblSpots = 0;
+
+  function ladybirdSVG(spots, showBoth){
+    // lay the spots out on the left wing, centred so small counts sit in the middle
+    var n = Math.max(1, Math.min(spots, 10));
+    var perCol = n <= 4 ? 1 : 2;                         // one column up to four, then two
+    var rowsN = Math.ceil(n/perCol);
+    var colGap = 13;
+    var rowGap = perCol === 1 ? (n <= 3 ? 20 : 19) : (rowsN <= 3 ? 17 : 11.5);
+    var midX = 30, midY = 60;                            // middle of the left wing
+    var dots = "";
+    for(var i=0;i<n;i++){
+      var col = i % perCol, row = Math.floor(i/perCol);
+      var inThisRow = Math.min(perCol, n - row*perCol);   // centre a short last row
+      var cx = midX + (col - (inThisRow-1)/2)*colGap;
+      var cy = midY + (row - (rowsN-1)/2)*rowGap;
+      dots += '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+(perCol === 1 ? 7 : 4.6)
+            + '" fill="#1d2126"/>';
+    }
+    return '<svg viewBox="0 0 100 104" xmlns="http://www.w3.org/2000/svg">'
+      + '<path d="M36 12 l-10 -9 M64 12 l10 -9" stroke="#1d2126" stroke-width="4.5" stroke-linecap="round"/>'
+      + '<circle cx="26" cy="2" r="4" fill="#1d2126"/><circle cx="74" cy="2" r="4" fill="#1d2126"/>'
+      + '<ellipse cx="50" cy="58" rx="43" ry="44" fill="#e8443a" stroke="#a8321f" stroke-width="3"/>'
+      + dots
+      + (showBoth ? mirrorDots(n)
+          : '<text x="70" y="74" text-anchor="middle" font-family="Fredoka,sans-serif"'
+            + ' font-size="44" font-weight="700" fill="#ffd6cf">?</text>')
+      + '<path d="M50 20 v78" stroke="#1d2126" stroke-width="5"/>'
+      + '<path d="M18 26 a33 25 0 0 1 64 0z" fill="#1d2126"/>'
+      + '<circle cx="35" cy="16" r="5" fill="#ffffff"/><circle cx="65" cy="16" r="5" fill="#ffffff"/>'
+      + '<circle cx="35" cy="17" r="2.3" fill="#1d2126"/><circle cx="65" cy="17" r="2.3" fill="#1d2126"/></svg>';
+  }
+  function mirrorDots(n){                      // the same spots again on the other wing
+    var perCol = n <= 4 ? 1 : 2, rowsN = Math.ceil(n/perCol);
+    var colGap = 13, rowGap = perCol === 1 ? (n <= 3 ? 20 : 19) : (rowsN <= 3 ? 17 : 11.5);
+    var out = "";
+    for(var i=0;i<n;i++){
+      var col = i % perCol, row = Math.floor(i/perCol);
+      var inRow = Math.min(perCol, n - row*perCol);
+      out += '<circle cx="'+(70 + (col - (inRow-1)/2)*colGap).toFixed(1)
+           + '" cy="'+(60 + (row - (rowsN-1)/2)*rowGap).toFixed(1)
+           + '" r="'+(perCol === 1 ? 7 : 4.6)+'" fill="#1d2126"/>';
+    }
+    return out;
+  }
+  function flowerSVG(n){
+    var petals = "", rx = Math.max(4.2, 10 - n*0.28);
+    for(var i=0;i<n;i++){
+      petals += '<ellipse cx="50" cy="20" rx="'+rx.toFixed(1)+'" ry="17" fill="#f06292" '
+              + 'stroke="#c4527b" stroke-width="2" transform="rotate('+(i*360/n).toFixed(1)+' 50 50)"/>';
+    }
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">'
+      + petals
+      + '<circle cx="50" cy="50" r="21" fill="#ffd84d" stroke="#d9a51f" stroke-width="3"/>'
+      + '<text x="50" y="59" text-anchor="middle" font-family="Fredoka,sans-serif" font-size="25"'
+      + ' font-weight="700" fill="#5a3a12">'+n+'</text></svg>';
+  }
+
+  function startDouble(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    var spots = 1 + Math.floor(Math.random()*(score < 2 ? 5 : 10));   // doubles up to ten
+    dblAnswer = spots*2;
+
+    var pool = [];
+    for(var v=2; v<=20; v+=2){
+      if(v === dblAnswer || v === spots) continue;   // never offer the spot count itself — that is the trap
+      pool.push(v);
+    }
+    pool.sort(function(a, b){ return Math.abs(a-dblAnswer) - Math.abs(b-dblAnswer); });
+    var near = pool.slice(0, 6).sort(function(){ return Math.random()-0.5; });
+    var opts = [dblAnswer].concat(near.slice(0, 3));
+    opts.sort(function(){ return Math.random()-0.5; });
+
+    dblFlowers = [];
+    var slot = r.width/4;
+    for(var i=0;i<4;i++){
+      var e = addEnt(flowerSVG(opts[i]), slot*(i + 0.5), r.height*0.26,
+                     Math.min(slot*0.78, m*0.3), "flower");
+      e.num = opts[i];
+      e.el.style.cursor = "pointer";
+      dblFlowers.push(e);
+    }
+
+    setHero(ladybirdSVG(spots), m*0.32);                 // roomier, so the spots read clearly
+    dblHome = {x:r.width/2, y:r.height*0.72};
+    hx = dblHome.x; hy = dblHome.y; drawHero();
+    orderCard("How many spots altogether?",
+      '<span class="oname">' + spots + ' + ? =</span>');
+    dblSpots = spots;
+    badge.classList.add("on");
+    badge.textContent = "🐞 " + spots + " on this wing, ? on the other";
+    stopLoop();
+  }
+  function flyLadybird(tx, ty, ms, done){
+    var fx = hx, fy = hy, t0 = performance.now();
+    (function frame(){
+      var k = Math.min((performance.now()-t0)/ms, 1), e = 1 - Math.pow(1-k, 2);
+      hx = fx + (tx-fx)*e;
+      hy = fy + (ty-fy)*e - Math.sin(e*Math.PI)*40;      // a little arc, like flight
+      drawHero();
+      if(k < 1) requestAnimationFrame(frame); else if(done) done();
+    })();
+  }
+  function doubleDown(pt){
+    if(busy) return;
+    var e = entAt(pt, "flower");
+    if(!e) return;
+    busy = true;
+    stepSound();
+    flyLadybird(e.x, e.y + e.s*0.6, 520, function(){
+      busy = false;
+      if(e.num === dblAnswer){
+        e.el.classList.remove("munch"); void e.el.offsetWidth; e.el.classList.add("munch");
+        hero.innerHTML = ladybirdSVG(dblSpots, true);     // fill the other wing in
+        badge.textContent = "🐞 " + dblSpots + " + " + dblSpots + " = " + dblAnswer;
+        busy = true;
+        setTimeout(function(){ busy = false; if(mode === "maths") celebrate("DOUBLE IT!"); }, 750);
+      } else {
+        softSound();
+        toast(e.num + " is not double — count the spots again.");
+        flyLadybird(dblHome.x, dblHome.y, 420);
+      }
+    });
+  }
+
+  /* ================= MATHS: board break (dojo, number keys) ================= */
+  var bbTotal = 0, bbSmash = 0, bbLeft = 0, bbSeen = [], bbEls = [];
+  function startBoards(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    hero.classList.remove("on");
+    if(score === 0) bbSeen = [];
+    var hi = score < 2 ? 6 : 10, tries = 0;
+    do {
+      bbTotal = 3 + Math.floor(Math.random()*(hi-2));
+      bbSmash = 1 + Math.floor(Math.random()*(bbTotal-1));
+      bbLeft = bbTotal - bbSmash;
+      tries++;
+    } while(tries < 60 && bbSeen.indexOf(bbLeft) !== -1);
+    bbSeen.push(bbLeft);
+
+    sceneDiv("left:"+(r.width*0.5 - m*0.1)+"px;top:"+(r.height*0.04)+"px;width:"+(m*0.19)+"px;", FIGHTER_SVG);
+    var bw = Math.min(r.width*0.62/bbTotal, m*0.14), bh = m*0.24;
+    var startX = (r.width - bw*bbTotal*1.25)/2;
+    bbEls = [];                                   // keep the boards, so the right ones break
+    for(var i=0;i<bbTotal;i++){
+      bbEls.push(sceneDiv("left:"+(startX + i*bw*1.25)+"px;top:"+(r.height*0.3)+"px;width:"+bw+"px;height:"+bh
+        + "px;border-radius:5px;background:linear-gradient(180deg,#d3a86b,#b8894a);"
+        + "border:3px solid #8a6a45;box-sizing:border-box;transition:transform .4s ease,opacity .4s ease;", ""));
+    }
+    sceneDiv("left:0;top:"+(r.height*0.6)+"px;width:100%;text-align:center;color:#fff;"
+      + "font-weight:700;font-size:"+Math.round(m*0.14)+"px;line-height:1;"
+      + "text-shadow:0 4px 0 rgba(0,0,0,.35);",
+      bbTotal + ' <span style="color:#ffc93c">−</span> ' + bbSmash + ' <span style="color:#ffc93c">=</span> ?');
+    orderCard(bbTotal + " boards, sensei breaks " + bbSmash,
+      '<span class="oname">How many are left?</span>');
+    badge.classList.add("on");
+    badge.textContent = "⌨️ type the answer";
+    showTouchKeys([String(bbLeft), String(Math.max(1,bbLeft-1)), String(Math.min(9,bbLeft+1)), String(bbTotal)]);
+    stopLoop();
+  }
+  function typeBoards(k){
+    if(!/^[0-9]$/.test(k)) return;
+    if(parseInt(k, 10) !== bbLeft){
+      softSound();
+      toast("Not quite — take " + bbSmash + " away from " + bbTotal + ".");
+      return;
+    }
+    busy = true;
+    for(var i=0;i<bbSmash;i++){
+      (function(el, d){
+        setTimeout(function(){
+          el.style.transform = "translateY(60px) rotate(" + (Math.random()*50-25) + "deg)";
+          el.style.opacity = "0";
+          tone(130, 0, .16, "square", .16);
+        }, d*160);
+      })(bbEls[bbEls.length-1-i], i);
+    }
+    setTimeout(function(){ busy = false; if(mode === "maths") celebrate("HIYAA!"); }, bbSmash*160 + 500);
+  }
+
+  /* ================= MATHS: share the leaves (dinosaurs, mouse) ================= */
+  var shTotal = 0, shHalf = 0, shDinos = 2, shSeen = [];
+  function startShare(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    hero.classList.remove("on");
+    if(score === 0) shSeen = [];
+
+    shDinos = score < 3 ? 2 : 3;                    // three dinosaurs for the last two rounds
+    if(shDinos === 2){
+      var tries = 0;
+      do {
+        shHalf = 1 + Math.floor(Math.random()*5);   // totals of 2 up to 10
+        tries++;
+      } while(tries < 60 && shSeen.indexOf(shHalf) !== -1);
+      shSeen.push(shHalf);
+      shTotal = shHalf*2;
+    } else {
+      shTotal = score === 3 ? 6 : 9;
+      shHalf = shTotal/shDinos;
+    }
+
+    // how many leaves there are, stated plainly above the pile
+    sceneDiv("left:0;top:"+(r.height*0.03)+"px;width:100%;text-align:center;color:#fff;"
+      + "font-weight:700;font-size:"+Math.round(m*0.11)+"px;line-height:1;"
+      + "text-shadow:0 4px 0 rgba(0,0,0,.35);", shTotal + " leaves");
+
+    var cols = Math.min(shTotal, 5), rows = Math.ceil(shTotal/cols);
+    var lz = Math.min(r.width*0.5/cols, m*0.13);
+    var px0 = (r.width - lz*cols)/2, py0 = r.height*0.15;
+    for(var i=0;i<shTotal;i++){
+      sceneDiv("left:"+(px0 + (i%cols)*lz)+"px;top:"+(py0 + Math.floor(i/cols)*lz)+"px;width:"
+        + lz+"px;height:"+lz+"px;display:flex;align-items:center;justify-content:center;font-size:"
+        + Math.round(lz*0.8)+"px;", "🍃");
+    }
+
+    // the dinosaurs, facing in, each with a plate in front of them
+    var dz = m*0.17, plate = m*0.13;
+    var dy = r.height*0.5, py = dy + dz*0.62;
+    for(var d=0; d<shDinos; d++){
+      var cxp = r.width*((d + 0.5)/shDinos);
+      var faceIn = (d < shDinos/2);                 // left-hand ones turn to face the middle
+      sceneDiv("left:"+(cxp - dz/2)+"px;top:"+dy+"px;width:"+dz+"px;height:"+dz+"px;"
+        + "display:flex;align-items:center;justify-content:center;font-size:"+Math.round(dz*0.92)
+        + "px;line-height:1;" + (faceIn ? "transform:scaleX(-1);" : ""), "🦕");
+      sceneDiv("left:"+(cxp - plate/2)+"px;top:"+py+"px;width:"+plate+"px;", PLATE_SVG);
+    }
+
+    var opts = [shHalf], guard = 0;
+    while(opts.length < 3 && guard++ < 200){
+      var o = shHalf + Math.floor(Math.random()*5) - 2;
+      if(o >= 1 && o <= 10 && o !== shTotal && opts.indexOf(o) === -1) opts.push(o);
+    }
+    for(var f=1; opts.length < 3; f++) if(opts.indexOf(shHalf+f) === -1 && shHalf+f !== shTotal) opts.push(shHalf+f);
+    opts.sort(function(){ return Math.random()-0.5; });
+    for(var b=0;b<3;b++){
+      var e = addEnt(tileHTML("🧺", opts[b]), r.width*(0.27 + b*0.23), r.height*0.76, m*0.15, "basket");
+      e.num = opts[b];
+    }
+    orderCard("Share " + shTotal + " leaves between " + shDinos + " dinosaurs",
+      '<span class="oname">How many each?</span>');
+    badge.classList.remove("on");
+    stopLoop();
+  }
+  function shareDown(pt){
+    var e = entAt(pt, "basket");
+    if(!e || busy) return;
+    if(e.num !== shHalf){
+      softSound();
+      toast("Not " + e.num + " — they must all get the same.");
+      e.el.classList.remove("nudge"); void e.el.offsetWidth; e.el.classList.add("nudge");
+      return;
+    }
+    markTile(e);
+    e.el.classList.add("munch");
+    celebrate("FAIR SHARES!");
+  }
+
+  /* ================= MATHS: more or fewer (food, mouse) ================= */
+  var cmpWantMore = true, cmpPlates = [], cmpSeen = [];
+  function startCompare(){
+    clearEnts(); clearPieces(); sceneLayer.innerHTML = "";
+    var r = rect(), m = Math.min(r.width, r.height);
+    hero.classList.remove("on");
+    if(score === 0) cmpSeen = [];
+    cmpWantMore = Math.random() < 0.5;
+    var hi = score < 2 ? 6 : 11, near = score >= 3;
+    var a, b, tries = 0;
+    do {
+      a = 1 + Math.floor(Math.random()*hi);
+      b = near ? Math.max(1, Math.min(hi, a + (Math.random() < 0.5 ? -1 : 1)))
+               : 1 + Math.floor(Math.random()*hi);
+      tries++;
+    } while(tries < 80 && (a === b || cmpSeen.indexOf(a + ":" + b) !== -1));
+    cmpSeen.push(a + ":" + b);
+
+    var food = ["🍓","🍒","🍇","🥕","🍪"][score % 5];
+    cmpPlates = [];
+    var counts = [a, b];
+    for(var i=0;i<2;i++){
+      var inner = '<span class="shoal">';
+      for(var k=0;k<counts[i];k++) inner += food;
+      inner += '</span>';
+      var e = addEnt(inner, r.width*(0.28 + i*0.44), r.height*0.42, m*0.36, "plate");
+      e.num = counts[i];
+      cmpPlates.push(e);
+    }
+    orderCard("Click the plate with", '<span class="oname">' + (cmpWantMore ? "MORE" : "FEWER")
+      + " " + food + '</span>');
+    badge.classList.remove("on");
+    stopLoop();
+  }
+  function compareDown(pt){
+    var e = entAt(pt, "plate");
+    if(!e || busy) return;
+    var other = cmpPlates[0] === e ? cmpPlates[1] : cmpPlates[0];
+    var right = cmpWantMore ? (e.num > other.num) : (e.num < other.num);
+    if(right){
+      e.el.classList.remove("munch"); void e.el.offsetWidth; e.el.classList.add("munch");
+      celebrate(e.num + " AND " + other.num + "!");
+    } else {
+      softSound();
+      toast("That plate has " + e.num + ", the other has " + other.num + ".");
+      e.el.classList.remove("nudge"); void e.el.offsetWidth; e.el.classList.add("nudge");
+    }
+  }
+
   /* ================= round router ================= */
   var STARTERS = {maze:startMaze, dive:startDive, cross:startCross,
                   drive:startDrive, dodge:startDodge, catch:startCatch,
@@ -3743,14 +4195,18 @@
                   board:startBoard, kata:startKata, pads:startPads,
                   dig:startDig, trail:startTrail, leap:startLeap,
                   ants:startAnts, bugs:startBugs, crawl:startCrawl,
-                  penalty:startPenalty, shoal:startShoal, eggs:startEggs};
+                  penalty:startPenalty, shoal:startShoal, eggs:startEggs,
+                  queue:startQueue, seq:startSeq, double:startDouble,
+                  boards:startBoards, share:startShare, compare:startCompare};
   var UPDATERS = {maze:updateMaze, dive:updateDive, cross:updateCross, drive:updateDrive,
                   dodge:updateDodge, catch:updateCatch,
                   snap:updateSnap, mud:updateMud, track:updateTrack,
                   letters:updateLetters, meteor:updateMeteor,
-                  board:updateBoard, pads:updatePads, dig:updateDig, crawl:updateCrawl};
+                  board:updateBoard, pads:updatePads, dig:updateDig, crawl:updateCrawl,
+                  };
   var TYPERS = {sonar:typeSonar, feed:typeFeed, toll:typeToll, meteor:typeMeteor, soup:typeSoup,
-                kata:typeKata, trail:typeTrail, bugs:typeBugs, eggs:typeEggs};
+                kata:typeKata, trail:typeTrail, bugs:typeBugs, eggs:typeEggs, seq:typeSeq,
+                boards:typeBoards};
   function typeKey(k){
     if((mode !== "letters" && mode !== "maths") || busy || !running) return;
     if(gameKey === "letters") pressLetter(k);
@@ -3758,7 +4214,8 @@
   }
   var STEPPERS = {cross:crossStep, pads:padStep, leap:leapStep, crawl:crawlStep};
   var MOUSE_DOWN = {snap:snapDown, mud:mudDown, track:trackDown, stars:starsDown, pizza:pizzaDown,
-                    board:boardDown, dig:digDown, ants:antsDown, shoal:shoalDown};
+                    board:boardDown, dig:digDown, ants:antsDown, shoal:shoalDown, queue:queueDown, double:doubleDown,
+                    share:shareDown, compare:compareDown};
   var MOUSE_MOVE = {track:trackMove, pizza:pizzaMove, dig:digMove, ants:antsMove};
   var MOUSE_UP   = {track:trackUp,  pizza:pizzaUp, board:boardUp, dig:digUp, ants:antsUp};
 
@@ -4069,6 +4526,7 @@
   /* ================= keyboard ================= */
   var ARROWS = {ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right",
                 w:"up", s:"down", a:"left", d:"right", W:"up", S:"down", A:"left", D:"right"};
+  var ARROW_MATHS = {};
   window.addEventListener("keydown", function(ev){
     if(ev.key === "Enter" || ev.key === " "){
       if(!rulesSheet.hidden){ ev.preventDefault(); $("goBtn").click(); return; }
@@ -4076,7 +4534,7 @@
       if(!winSheet.hidden){ ev.preventDefault(); $("againBtn").click(); return; }
     }
     if(!running) return;
-    if(mode === "arrows"){
+    if(mode === "arrows" || ARROW_MATHS[gameKey]){
       var dir = ARROWS[ev.key];
       if(!dir) return;
       ev.preventDefault();
@@ -4096,7 +4554,7 @@
     var dir = b.getAttribute("data-dir");
     b.addEventListener("pointerdown", function(ev){
       ev.preventDefault();
-      if(mode !== "arrows") return;
+      if(mode !== "arrows" && !ARROW_MATHS[gameKey]) return;
       if(STEPPERS[gameKey]) STEPPERS[gameKey](dir); else held[dir] = true;
     });
     b.addEventListener("pointerup", function(){ held[dir] = false; });
@@ -4122,6 +4580,12 @@
     feed:   ["🥕","Feed the Animals","The animals are hungry. Each one has a letter. Type it to throw them a snack."],
     toll:   ["🎫","Toll Booth Typer","Cars are waiting. Type the letter or number on the front car's plate to lift the barrier."],
     meteor: ["🛡️","Meteor Defence","Meteors are falling! Each one has a letter. Type it to zap the meteor before it lands."],
+    boards: ["🔢","Board Count","Count the boards on the stand. Sensei is going to break some of them — type how many will be left."],
+    share:  ["🔢","Share the Leaves","The hungry dinosaurs all want the same number of leaves. Count the pile, then click the basket showing how many they each get."],
+    compare:["🔢","More or Fewer","Count the food on both plates, then click the one the card asks for — sometimes more, sometimes fewer."],
+    queue:  ["🔢","Car Queue","The cars are all jumbled up. Click them one at a time, starting with the smallest number, to line them up at the toll."],
+    seq:    ["🔢","Space Sequence","The planets count up or count down, but one number is missing. Work out what it should be and type it."],
+    double: ["🔢","Ladybird Doubles","One wing has spots and the other has a question mark — but both wings always match! Count one wing, then click the flower showing how many spots there are altogether."],
     penalty:["🔢","Penalty Maths","Add the two numbers on the card together. Then pull the ball back with the mouse and shoot it into the net showing the answer!"],
     shoal:  ["🔢","Count the Shoal","Count the fish in each group. Click the group that has the number on the card."],
     eggs:   ["🔢","Egg Boxes","The box needs filling. Count the empty spaces and type that number on the keyboard."],
@@ -4274,13 +4738,13 @@
       themeSheets.appendChild(lbl);
       sheets.forEach(function(kind){
         var meta = SHEET_META[kind] || ["📄", kind];
-        var a = document.createElement("a");
-        a.className = "sheet-btn";
-        a.href = "/printables/" + t.id + "/" + kind + ".pdf";
-        a.target = "_blank";
-        a.rel = "noopener";
-        a.innerHTML = '<span>'+meta[0]+'</span><span>'+meta[1]+'</span>';
-        themeSheets.appendChild(a);
+        var link = document.createElement("a");
+        link.className = "sheet-btn";
+        link.href = "/printables/" + t.id + "/" + kind + ".pdf";
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.innerHTML = '<span>'+meta[0]+'</span><span>'+meta[1]+'</span>';
+        themeSheets.appendChild(link);
       });
     }
     homeSheet.hidden = true; winSheet.hidden = true;
@@ -4375,7 +4839,39 @@
   });
   $("menuBtn").addEventListener("click", function(){ var t = wonTheme; resetField(); openTheme(t); });
 
-  window.addEventListener("popstate", function(){ if(mode || !homeSheet.hidden === false) toHome(); });
+  /* ---------- keep stray mouse clicks from leaving the game ----------
+     The side buttons on a mouse fire as button 3 and 4. Blocking those helps, but it
+     is not reliable in every browser, so the history is also kept topped up: any back
+     or forward navigation is caught, cancelled, and turned into the app's own Back. */
+  function appBack(){
+    if(mode){                                   // in a game → back to the theme screen
+      var t = theme;
+      resetField();
+      if(t) openTheme(t); else toHome();
+    } else if(!winSheet.hidden || !themeSheet.hidden){
+      toHome();                                 // on a theme or win screen → home
+    }
+    // already home: stay put
+  }
+  function guardHistory(){
+    try{ history.pushState({cq:1}, "", location.pathname + location.search); }catch(e){}
+  }
+  window.addEventListener("popstate", function(){
+    guardHistory();                             // put the entry back so they never leave
+    appBack();
+  });
+  ["mousedown","mouseup","auxclick"].forEach(function(evt){
+    window.addEventListener(evt, function(ev){
+      if(ev.button === 3 || ev.button === 4){ ev.preventDefault(); ev.stopPropagation(); }
+    }, true);
+  });
+  window.addEventListener("keydown", function(ev){
+    if(ev.key === "Backspace"){                 // no stray backspace navigation either
+      var t = ev.target && ev.target.tagName;
+      if(t !== "INPUT" && t !== "TEXTAREA") ev.preventDefault();
+    }
+  }, true);
+  guardHistory();
 
   window.addEventListener("resize", function(){
     paintBackdrop();
